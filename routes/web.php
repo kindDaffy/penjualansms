@@ -22,6 +22,26 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// // Admin
+// Route::get('/admin', function () {
+//     return Inertia::render('AdminDashboard');
+// });
+
+// Rute untuk Admin
+Route::get('/admin', function () {
+    return Inertia::render('AdminDashboard');
+})->name('admin');
+
+// Route::middleware(['auth', 'admin'])->group(function () {
+//     // Route::get('/Admin/Daftar-pegawai',[PegawaiController::class,'index'])->name("pegawai.index");
+//     // Route::post('/Admin/tambah-pegawai', [PegawaiController::class,'store'])->name('pegawai.store');
+//     // // Route::get(`/edit-pegawai`, [PegawaiController::class,'edit'])->name('pegawai.edit');
+//     // Route::get('/admin/pegawai/{pegawai}/edit', [PegawaiController::class, 'edit'])->name('pegawai.edit');
+//     // Route::put('/admin/pegawai/{pegawai}/update',[PegawaiController::class,'update'])->name('pegawai.update');
+//     // Route::delete('/admin/pegawai/{pegawai}',[PegawaiController::class,'destroy'])->name('pegawai.destroy');
+//     // Route::resource('pegawai', PegawaiController::class);
+// });
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
