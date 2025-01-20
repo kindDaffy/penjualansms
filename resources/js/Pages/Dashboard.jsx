@@ -1,7 +1,21 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+    const { auth } = usePage().props;
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (auth.user.role === 'admin') {
+            navigate('/admin');
+        } else {
+            navigate('/dashboard');
+        }
+    }, [auth.user.role]);
+        
     return (
         <AuthenticatedLayout
             header={

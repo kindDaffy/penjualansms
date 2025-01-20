@@ -22,6 +22,6 @@ class Admin
         }
 
         // Redirect ke dashboard lain jika bukan admin
-        return redirect()->route('dashboardop')->withErrors('Anda tidak memiliki akses ke halaman ini.');
+        return redirect()->route('AdminDashboard')->withErrors('Anda tidak memiliki akses ke halaman ini.');
     }
 }

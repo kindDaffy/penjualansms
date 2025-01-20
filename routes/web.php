@@ -22,15 +22,29 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// // Admin
-// Route::get('/admin', function () {
-//     return Inertia::render('AdminDashboard');
-// });
 
-// Rute untuk Admin
-Route::get('/admin', function () {
-    return Inertia::render('AdminDashboard');
-})->name('admin');
+// Dashboard Admin
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', function () {
+        return Inertia::render('AdminDashboard');
+    })->name('admin');
+
+    Route::get('/categories', function () {
+        return Inertia::render('Categories');
+    })->name('categories');
+
+    Route::get('/products', function () {
+        return Inertia::render('Products');
+    })->name('products');
+
+    Route::get('/transactions', function () {
+        return Inertia::render('Transactions');
+    })->name('transactions');
+
+    Route::get('/users', function () {
+        return Inertia::render('Users');
+    })->name('users');
+});
 
 // Route::middleware(['auth', 'admin'])->group(function () {
 //     // Route::get('/Admin/Daftar-pegawai',[PegawaiController::class,'index'])->name("pegawai.index");

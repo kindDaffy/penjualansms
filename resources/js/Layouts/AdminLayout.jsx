@@ -1,7 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { CgHomeAlt } from "react-icons/cg";
@@ -34,28 +33,28 @@ export default function AdminLayout({ header, children }) {
                         Home
                     </NavLink>
                     <NavLink
-                        href={route("dashboard")}
+                        href={route("categories")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <FaFolder className="mr-2"/>
                         Categories
                     </NavLink>
                     <NavLink
-                        href={route("dashboard")}
+                        href={route("products")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <MdShoppingBag className="mr-2"/>
                         Products
                     </NavLink>
                     <NavLink
-                        href={route("dashboard")}
+                        href={route("transactions")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <RiShoppingCart2Fill className="mr-2"/>
                         Transactions
                     </NavLink>
                     <NavLink
-                        href={route("dashboard")}
+                        href={route("users")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <IoPeopleSharp className="mr-2"/>
