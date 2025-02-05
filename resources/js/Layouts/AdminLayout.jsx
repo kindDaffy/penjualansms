@@ -33,14 +33,14 @@ export default function AdminLayout({ header, children }) {
                         Home
                     </NavLink>
                     <NavLink
-                        href={route("categories")}
+                        href={route("categories.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <FaFolder className="mr-2"/>
                         Categories
                     </NavLink>
                     <NavLink
-                        href={route("products")}
+                        href={route("products.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <MdShoppingBag className="mr-2"/>
@@ -54,7 +54,7 @@ export default function AdminLayout({ header, children }) {
                         Transactions
                     </NavLink>
                     <NavLink
-                        href={route("users")}
+                        href={route("users.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <IoPeopleSharp className="mr-2"/>
