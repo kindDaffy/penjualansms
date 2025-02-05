@@ -6,12 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\CategoryFactory;
 use Illuminate\Support\Str;
+use App\Models\Product;
 
 class Category extends Model
 {
     use HasFactory;
 
     protected $table = 'shop_categories';
+
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'parent_id',
@@ -37,16 +42,16 @@ class Category extends Model
 
     public function children()
     {
-        return $this->hasMany('Category', 'parent_id');
+        return $this->hasMany(\App\Models\Category::class, 'parent_id');
     }
 
     public function parent()
     {
-        return $this->belongsTo('Category', 'parent_id');
+        return $this->belongsTo(\App\Models\Category::class, 'parent_id');
     }
 
     public function products()
     {
-        return $this->belongsToMany('Product', 'shop_categories_products', 'product_id', 'category_id');
+        return $this->belongsToMany(\App\Models\Product::class, 'shop_categories_products', 'product_id', 'category_id');
     }
 }
