@@ -18,10 +18,20 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Customer
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
+    Route::get('/oli-mesin', function () {
+        return Inertia::render('OliMesin');
+    })->name('oli-mesin');
+
+    Route::get('/bahan-bakar', function () {
+        return Inertia::render('BahanBakarKhusus');
+    })->name('bahan-bakar');
+});
 
 // Dashboard Admin
 Route::middleware(['auth', 'admin'])->group(function () {
