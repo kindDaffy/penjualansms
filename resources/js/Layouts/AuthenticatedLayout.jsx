@@ -4,12 +4,17 @@ import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { FiShoppingCart } from "react-icons/fi";
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [search, setSearch] = useState('');
+
+    const handleSearch = (e) => {
+        setSearch(e.target.value);
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -19,21 +24,37 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <ApplicationLogo img="logoSMS.jpg" className="h-14 w-auto fill-current text-white" />
                                 </Link>
+
+                                <h2 className='ml-2 font-semibold'>SMS Shop</h2>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
+                            <div className="hidden sm:flex sm:items-center sm:ms-6">
+                                <input
+                                    type="text"
+                                    placeholder="Cari sesuatu..."
+                                    value={search}
+                                    onChange={handleSearch}
+                                    className="ml-4 w-[600px] border rounded-md px-4 py-2"
+                                />
                             </div>
                         </div>
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                            <div className='relative'>
+                                <NavLink href="#">
+                                    <FiShoppingCart 
+                                        className="text-xl"    
+                                    />
+                                    <span 
+                                        className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs"
+                                    >
+                                        0
+                                    </span>
+                                </NavLink>
+                            </div>
+
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -162,15 +183,39 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
-
             <main>{children}</main>
+
+            <footer className="bg-white py-10 bottom-0">
+                <div className="container max-w-7xl mx-auto ">
+                    <div className="flex flex-wrap justify-between">
+                        <div className="w-full md:w-1/2 mb-8 md:mb-0">
+                            <h1 className="text-2xl font-bold text-gray-800"> PT. Sidorejo Makmur Sejahtera </h1>
+                            <p className="mt-2 text-gray-600">Lorem ipsum dolor sit amet</p>
+                        </div>
+
+                        <div className="w-full md:w-1/4 mb-8 md:mb-0">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Navigation</h3>
+                            <ul className="space-y-2 text-gray-600">
+                                <li><Link href="#" className="hover:text-blue-600">Home</Link></li>
+                                <li><Link href="#" className="hover:text-blue-600">Best Seller</Link></li>
+                                <li><Link href="#" className="hover:text-blue-600">Category</Link></li>
+                                <li><Link href="#" className="hover:text-blue-600">Community</Link></li>
+                                <li><Link href="#" className="hover:text-blue-600">Blog</Link></li>
+                            </ul>
+                        </div>
+
+                        <div className="w-full md:w-1/4">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Company</h3>
+                            <a href="mailto:john@example.com" className="text-blue-600 hover:underline">john@example.com</a>
+                            <p className="mt-2 text-gray-600">Jl. Raya Semarang-Demak, Bandung Rejo, Demak</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-10 flex flex-wrap justify-between items-center border-t pt-6">
+                        <p className="text-gray-600">&copy; 2025 SMS Shop. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
