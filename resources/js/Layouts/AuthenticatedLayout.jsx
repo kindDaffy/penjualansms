@@ -18,7 +18,7 @@ export default function AuthenticatedLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
+            <nav className="border-b border-gray-100 bg-white py-2">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -196,10 +196,10 @@ export default function AuthenticatedLayout({ children }) {
                         <div className="w-full md:w-1/4 mb-8 md:mb-0">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Navigation</h3>
                             <ul className="space-y-2 text-gray-600">
-                                <li><Link href="#" className="hover:text-blue-600">Home</Link></li>
-                                <li><Link href="#" className="hover:text-blue-600">Best Seller</Link></li>
-                                <li><Link href="#" className="hover:text-blue-600">Category</Link></li>
-                                <li><Link href="#" className="hover:text-blue-600">Community</Link></li>
+                                <li><Link href="/dashboard" className="hover:text-blue-600">Home</Link></li>
+                                <li><Link href="/oli-mesin" className="hover:text-blue-600">Oli Mesin</Link></li>
+                                <li><Link href="/bahan-bakar" className="hover:text-blue-600">Bahan Bakar Khusus</Link></li>
+                                <li><Link href="#" className="hover:text-blue-600">FAQ</Link></li>
                                 <li><Link href="#" className="hover:text-blue-600">Blog</Link></li>
                             </ul>
                         </div>

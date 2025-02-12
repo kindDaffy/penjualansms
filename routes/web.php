@@ -28,11 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     Route::get('/oli-mesin', function () {
-        return Inertia::render('OliMesin');
+        return Inertia::render('Customer/OliMesin');
     })->name('oli-mesin');
 
     Route::get('/bahan-bakar', function () {
-        return Inertia::render('BahanBakarKhusus');
+        return Inertia::render('Customer/BahanBakarKhusus');
     })->name('bahan-bakar');
 });
 
