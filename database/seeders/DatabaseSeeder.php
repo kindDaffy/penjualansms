@@ -15,16 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if ($this->command->confirm('Do you want to refresh migration before seeding, it will clear all old data ?')) {
-            $this->command->call('migrate:refresh');
-            $this->command->info('Data cleared, starting from blank database');
-        }
 
-        User::factory()->count(5)->create();
-        $this->command->info('sample user seeded.');
+        User::factory()->create();
 
-        if ($this->command->confirm('Do you want to seed some sample products ?')) {
-            $this->call(ProductSeeder::class);
-        }
+        $this->call([
+            ProductTableSeeder::class,
+        ]);
+
     }
 }

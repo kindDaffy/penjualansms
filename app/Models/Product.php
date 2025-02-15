@@ -5,11 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\ProductFactory;
+use App\Models\Category;
 use Illuminate\Support\Str;
+use App\Traits\UuidTrait;
+
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, UuidTrait;
+    
+    protected $table = 'shop_products';
+    protected $keyType = 'string'; // Pastikan id adalah string (UUID)
+    public $incrementing = false; // Matikan auto-increment
 
     protected $fillable = [
         'parent_id',
@@ -30,7 +37,6 @@ class Product extends Model
 		'metas',
     ];
 
-    protected $table = 'shop_products';
 
     public const DRAFT = 'DRAFT';
 	public const ACTIVE = 'ACTIVE';
@@ -76,36 +82,36 @@ class Product extends Model
 
     public function user()
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo(User::class);
     }
 
     public function inventory()
     {
-        return $this->hasOne('ProductInventory');
+        return $this->hasOne(ProductInventory::class);
     }
 
     public function variants()
-	{
-		return $this->hasMany('Product', 'parent_id')->orderBy('price', 'ASC');
-	}
-
+    {
+        return $this->hasMany(Product::class, 'parent_id')->orderBy('price', 'ASC');
+    }
+    
     public function categories()
     {
-        return $this->belongsToMany('Category', 'shop_categories_products', 'product_id', 'category_id'); //phpcs:ignore
-    }
+        return $this->belongsToMany(Category::class, 'shop_categories_products', 'product_id', 'category_id');
+    }    
 
     public function tags()
     {
-        return $this->belongsToMany('Tag', 'shop_products_tags', 'product_id', 'tag_id');
+        return $this->belongsToMany(Tag::class, 'shop_products_tags', 'product_id', 'tag_id');
     }
 
     public function attributes()
-	{
-		return $this->hasMany('ProductAttribute', 'product_id');
-	}
+    {
+        return $this->hasMany(ProductAttribute::class, 'product_id');
+    }
 
     public function images()
-	{
-		return $this->hasMany('ProductImage', 'product_id');
-	}
+    {
+        return $this->hasMany(ProductImage::class, 'product_id');
+    }
 }

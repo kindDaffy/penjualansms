@@ -16,6 +16,7 @@ class CategoryController extends Controller
     {
         $search = $request->get('search', '');
         $categories = Category::where('name', 'like', "%$search%")
+            ->orderBy('created_at')
             ->get();
     
         return Inertia::render('Admin/ListCategory', [

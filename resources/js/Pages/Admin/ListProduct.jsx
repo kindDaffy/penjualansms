@@ -1,5 +1,5 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { Head, useForm, usePage, router } from "@inertiajs/react";
 import Swal from "sweetalert2";
 import {
     Card,
@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { FaPlus } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Products() {
     const { categories, products, success } = usePage().props;
@@ -21,25 +21,20 @@ export default function Products() {
     // Form handling
     const { data, setData, post, put, delete: destroy, errors, reset } = useForm({
         name: "",
+        sku: "",
         category_id: "",
-        description: "",
         price: "",
         sale_price: "",
-        status: "",
-        stock_status: "",
-        publish_date: "",
+        stock_status: "IN_STOCK",
+        status: "ACTIVE",
     });
 
     // Menampilkan pesan sukses dengan SweetAlert
-    if (success) {
-        Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: success,
-            timer: 3000,
-            showConfirmButton: false,
-        });
-    }
+    useEffect(() => {
+        if (success) {
+            Swal.fire({ icon: "success", title: "Success", text: success, timer: 3000, showConfirmButton: false });
+        }
+    }, [success]);
 
     const openAddModal = () => {
         reset();
@@ -52,29 +47,21 @@ export default function Products() {
         setCurrentProduct(product);
         setData({
             name: product.name,
+            sku: product.sku,
             category_id: product.category_id,
-            description: product.description,
             price: product.price,
             sale_price: product.sale_price,
-            status: product.status,
             stock_status: product.stock_status,
-            publish_date: product.publish_date,
+            status: product.status,
         });
         setIsModalOpen(true);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        if (editMode) {
-            put(route("products.update", currentProduct.id), {
-                onSuccess: () => setIsModalOpen(false),
-            });
-        } else {
-            post(route("products.store"), {
-                onSuccess: () => setIsModalOpen(false),
-            });
-        }
+        editMode
+            ? put(route("products.update", currentProduct.id), { onSuccess: () => setIsModalOpen(false) })
+            : post(route("products.store"), { onSuccess: () => setIsModalOpen(false) });
     };
 
     const handleDelete = (product) => {
@@ -93,6 +80,10 @@ export default function Products() {
                 });
             }
         });
+    };
+
+    const openEditPage = (product) => {
+        router.get(route("products.edit", product.id)); // Redirect ke halaman edit
     };
 
     return (
@@ -117,9 +108,11 @@ export default function Products() {
                         <table className="table-auto w-full border-collapse border border-gray-300">
                             <thead>
                                 <tr className="bg-gray-100">
-                                    <th className="border border-gray-300 px-4 py-2 text-left">No</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Product Name</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">Image</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">SKU</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">Price</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">Stock</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
                                 </tr>
                             </thead>
@@ -127,13 +120,12 @@ export default function Products() {
                                 {products && products.length > 0 ? (
                                     products.map((product, index) => (
                                         <tr key={product.id}>
-                                            <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
                                             <td className="border border-gray-300 px-4 py-2">{product.name}</td>
                                             <td className="border border-gray-300 px-4 py-2">{product.category?.name}</td>
                                             <td className="border border-gray-300 px-4 py-2">
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        onClick={() => openEditModal(product)}
+                                                        onClick={() => openEditPage(product)}
                                                         className="bg-green-500 text-white px-4 py-2 rounded-md shadow hover:bg-green-600"
                                                     >
                                                         Edit
@@ -192,15 +184,6 @@ export default function Products() {
                                     ))}
                                 </select>
                                 {errors.category_id && <div className="text-red-500 text-sm">{errors.category_id}</div>}
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Description</label>
-                                <textarea
-                                    value={data.description}
-                                    onChange={(e) => setData("description", e.target.value)}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                                />
-                                {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700">Price</label>
