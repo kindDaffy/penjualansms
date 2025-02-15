@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\TagFactory;
-use Illuminate\Support\Str;
+use App\Traits\UuidTrait;
 
 class Tag extends Model
 {
-    use HasFactory;
+    use HasFactory, UuidTrait;
 
     protected $table = 'shop_tags';
 
@@ -21,18 +21,6 @@ class Tag extends Model
     protected static function newFactory()
     {
         return TagFactory::new();
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Generate UUID secara otomatis untuk kolom id
-        static::creating(function ($model) {
-            if (empty($model->id)) {
-                $model->id = Str::uuid()->toString(); // Generate UUID baru
-            }
-        });
     }
 
     public function products()

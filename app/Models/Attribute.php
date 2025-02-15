@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Database\Factories\AttributeFactory;
-use Illuminate\Support\Str;
+use App\Traits\UuidTrait;
 
 class Attribute extends Model
 {
-    use HasFactory;
+    use HasFactory, UuidTrait;
 
     protected $fillable = [
         'code',
@@ -36,18 +36,6 @@ class Attribute extends Model
 
     protected static function newFactory(){
         return AttributeFactory::new();
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Generate UUID secara otomatis untuk kolom id
-        static::creating(function ($model) {
-            if (empty($model->id)) {
-                $model->id = Str::uuid()->toString(); // Generate UUID baru
-            }
-        });
     }
 
     public function options()

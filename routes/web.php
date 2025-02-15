@@ -36,15 +36,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('bahan-bakar');
 });
 
-// Dashboard Admin
+// Admin
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::resource('categories', CategoryController::class)->except(['show'])->whereUuid('category');
-    Route::resource('products', ProductController::class);
-    Route::resource('users', UserController::class)->except(['show']);
+    Route::resource('/admin/categories', CategoryController::class)->except(['show'])->whereUuid('category');
+    Route::resource('/admin/products', ProductController::class);
+    Route::resource('/admin/users', UserController::class)->except(['show']);
 
     Route::get('/admin', function () {
         return Inertia::render('AdminDashboard');
     })->name('admin');
+    
+    Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])
+    ->name('products.edit')
+    ->whereUuid('product');
 
     Route::get('/transactions', function () {
         return Inertia::render('Transactions');

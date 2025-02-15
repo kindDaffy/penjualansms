@@ -43,13 +43,14 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255|unique:shop_products,name',
-            'price'          => 'required|numeric|min:0',
-            'sale_price'     => 'nullable|numeric|min:0',
-            'status'         => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
-            'stock_status'   => 'required|in:' . implode(',', array_keys(Product::STOCK_STATUSES)),
-            'categories'     => 'nullable|array',
-            'categories.*'   => 'exists:shop_categories,id',
+            'name'         => 'required|string|max:255|unique:shop_products,name',
+            'sku'          => 'required|string|max:255|unique:shop_products,sku',
+            'price'        => 'required|numeric|min:0',
+            'sale_price'   => 'nullable|numeric|min:0|lte:price',
+            'status'       => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
+            'stock_status' => 'required|in:' . implode(',', array_keys(Product::STOCK_STATUSES)),
+            'categories'   => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         $validated['slug'] = Str::slug($request->name);
@@ -70,9 +71,9 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
-
-        return Inertia::render('Products/Edit', [
-            'product' => $product->load('categories'),
+    
+        return Inertia::render('Admin/EditProduct', [
+            'product' => $product,
             'categories' => $categories,
         ]);
     }

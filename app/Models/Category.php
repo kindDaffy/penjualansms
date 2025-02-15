@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Database\Factories\CategoryFactory;
-use Illuminate\Support\Str;
 use App\Models\Product;
+use App\Traits\UuidTrait;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, UuidTrait;
 
     protected $table = 'shop_categories';
 
@@ -28,30 +28,18 @@ class Category extends Model
         return CategoryFactory::new();
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Generate UUID secara otomatis untuk kolom id
-        static::creating(function ($model) {
-            if (empty($model->id)) {
-                $model->id = Str::uuid()->toString(); // Generate UUID baru
-            }
-        });
-    }
-
     public function children()
     {
-        return $this->hasMany(\App\Models\Category::class, 'parent_id');
+        return $this->hasMany(Category::class, 'parent_id');
     }
 
     public function parent()
     {
-        return $this->belongsTo(\App\Models\Category::class, 'parent_id');
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 
     public function products()
     {
-        return $this->belongsToMany(\App\Models\Product::class, 'shop_categories_products', 'product_id', 'category_id');
+        return $this->belongsToMany(Product::class, 'shop_categories_products', 'product_id', 'category_id');
     }
 }

@@ -54,7 +54,7 @@ export default function Index() {
             <div className="max-w-screen-xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-4">
                     {/* Search Bar */}
-                    <form onSubmit={handleSearch} className="flex space-x-2 items-center">
+                    <form onSubmit={handleSearch} className="flex space-x-2 items-center ml-auto">
                         <input
                             type="text"
                             value={search}

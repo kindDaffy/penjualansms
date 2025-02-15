@@ -2,28 +2,28 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\Attribute;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductInventory;
 use App\Models\Tag;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\User;
-use App\Models\Attribute;
 
-class ProductSeeder extends Seeder
+class ProductTableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * @return void
      */
-    public function run(): void
+    public function run()
     {
+        Model::unguard();
+
+        // Ambil satu user sebagai owner produk (Pastikan ada user di tabel users)
         $user = User::first();
-        if (!$user) {
-            $this->command->error('No users found. Please run the UserSeeder first.');
-            return;
-        }
 
         Attribute::setDefaultAttributes();
         $this->command->info('Default attributes seeded.');
@@ -37,14 +37,14 @@ class ProductSeeder extends Seeder
         $this->command->info('Tags seeded.');
         $randomTagIDs = Tag::all()->random()->limit(2)->pluck('id');
 
-        for ($i = 1; $i <= 1; $i++) {
+        for($i = 1; $i <= 10; $i++) {
             $manageStock = (bool)random_int(0, 1);
 
             $product = Product::factory()->create([
                 'user_id' => $user->id,
                 'manage_stock' => $manageStock,
             ]);
-
+            
             $product->categories()->sync($randomCategoryIDs);
             $product->tags()->sync($randomTagIDs);
 
@@ -53,7 +53,7 @@ class ProductSeeder extends Seeder
                 'attribute_id' => $attributeWeight->id,
                 'integer_value' => random_int(200, 2000), // gram
             ]);
-
+        
             if ($manageStock) {
                 ProductInventory::create([
                     'product_id' => $product->id,
@@ -62,7 +62,6 @@ class ProductSeeder extends Seeder
                 ]);
             }
         }
-
         $this->command->info('10 sample products seeded.');
     }
 }
