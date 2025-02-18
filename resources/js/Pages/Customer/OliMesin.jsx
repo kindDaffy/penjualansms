@@ -222,7 +222,7 @@ export default function OliMesin() {
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-5 mt-4">
+                            <div className="grid sm:grid-cols-3 gap-5 mt-4">
                                 {currentProducts.map((product) => (
                                     <Card key={product.id}>
                                         <CardHeader>

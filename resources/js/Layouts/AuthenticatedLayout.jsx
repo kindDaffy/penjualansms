@@ -10,11 +10,6 @@ export default function AuthenticatedLayout({ children }) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-    const [search, setSearch] = useState('');
-
-    const handleSearch = (e) => {
-        setSearch(e.target.value);
-    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -28,16 +23,6 @@ export default function AuthenticatedLayout({ children }) {
                                 </Link>
 
                                 <h2 className='ml-2 font-semibold'>SMS Shop</h2>
-                            </div>
-
-                            <div className="hidden sm:flex sm:items-center sm:ms-6">
-                                <input
-                                    type="text"
-                                    placeholder="Cari sesuatu..."
-                                    value={search}
-                                    onChange={handleSearch}
-                                    className="ml-4 w-[600px] border rounded-md px-4 py-2"
-                                />
                             </div>
                         </div>
 
@@ -186,14 +171,18 @@ export default function AuthenticatedLayout({ children }) {
             <main>{children}</main>
 
             <footer className="bg-white py-10 bottom-0">
-                <div className="container max-w-7xl mx-auto ">
+                <div className="container max-w-7xl mx-auto px-4">
                     <div className="flex flex-wrap justify-between">
-                        <div className="w-full md:w-1/2 mb-8 md:mb-0">
-                            <h1 className="text-2xl font-bold text-gray-800"> PT. Sidorejo Makmur Sejahtera </h1>
+                        {/* Section 1: Company Info */}
+                        <div className="w-full sm:w-1/2 mb-6">
+                            <h1 className="text-2xl font-bold text-gray-800">
+                                PT. Sidorejo Makmur Sejahtera
+                            </h1>
                             <p className="mt-2 text-gray-600">Lorem ipsum dolor sit amet</p>
                         </div>
 
-                        <div className="w-full md:w-1/4 mb-8 md:mb-0">
+                        {/* Section 2: Navigation */}
+                        <div className="w-full sm:w-1/4 mb-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Navigation</h3>
                             <ul className="space-y-2 text-gray-600">
                                 <li><Link href="/dashboard" className="hover:text-blue-600">Home</Link></li>
@@ -204,18 +193,27 @@ export default function AuthenticatedLayout({ children }) {
                             </ul>
                         </div>
 
-                        <div className="w-full md:w-1/4">
+                        {/* Section 3: Contact */}
+                        <div className="w-full sm:w-1/4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Company</h3>
-                            <a href="mailto:john@example.com" className="text-blue-600 hover:underline">john@example.com</a>
-                            <p className="mt-2 text-gray-600">Jl. Raya Semarang-Demak, Bandung Rejo, Demak</p>
+                            <a href="mailto:john@example.com" className="text-blue-600 hover:underline">
+                                john@example.com
+                            </a>
+                            <p className="mt-2 text-gray-600">
+                                Jl. Raya Semarang-Demak, Bandung Rejo, Demak
+                            </p>
                         </div>
                     </div>
 
-                    <div className="mt-10 flex flex-wrap justify-between items-center border-t pt-6">
-                        <p className="text-gray-600">&copy; 2025 SMS Shop. All rights reserved.</p>
+                    {/* Footer Bottom */}
+                    <div className="mt-10 flex flex-col sm:flex-row justify-between items-center border-t pt-6">
+                        <p className="text-gray-600 text-center sm:text-left">
+                            &copy; 2025 SMS Shop. All rights reserved.
+                        </p>
                     </div>
                 </div>
             </footer>
+
         </div>
     );
 }

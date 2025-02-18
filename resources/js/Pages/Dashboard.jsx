@@ -18,13 +18,14 @@ export default function Home() {
         <AuthenticatedLayout>
             <Head title="Home" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="py-8 sm:py-12">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    {/* Carousel Section */}
                     <Carousel
                         plugins={[autoplayPlugin]}
-                        className="w-full max-w-7xl mx-auto mb-8"
-                        loop 
-                        onMouseEnter={() => autoplayPlugin.current.stop()} 
+                        className="w-full max-w-7xl mx-auto mb-6 sm:mb-8"
+                        loop
+                        onMouseEnter={() => autoplayPlugin.current.stop()}
                         onMouseLeave={() => autoplayPlugin.current.reset()}
                     >
                         <CarouselContent>
@@ -36,9 +37,13 @@ export default function Home() {
                                 <CarouselItem key={item.id}>
                                     <div className="p-2">
                                         <Card>
-                                            <CardContent className="flex flex-col items-center justify-center p-6">
-                                                <img src={item.image} alt={item.title} className="w-full h-64 object-cover rounded-md mb-4" />
-                                                <span className="text-lg font-semibold">{item.title}</span>
+                                            <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6">
+                                                <img 
+                                                    src={item.image} 
+                                                    alt={item.title} 
+                                                    className="w-full h-48 sm:h-64 object-cover rounded-md mb-3 sm:mb-4" 
+                                                />
+                                                <span className="text-base sm:text-lg font-semibold">{item.title}</span>
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -49,33 +54,36 @@ export default function Home() {
                         <CarouselNext />
                     </Carousel>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div className="border bg-card rounded-lg shadow-md p-6 flex flex-col items-center">
-                            <h2 className="text-xl font-bold mb-4">Oli Mesin</h2>
+                    {/* Product Grid Section */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-6">
+                        {/* Card Oli Mesin */}
+                        <div className="border bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center">
+                            <h2 className="text-md sm:text-lg font-bold mb-2 sm:mb-3">Oli Mesin</h2>
                             <img
-                                src='/images/Oli.png'
+                                src='/images/Pertamina Lubricants.png'
                                 alt='Oli Mesin'
-                                className="w-full h-80 object-cover rounded-md border mb-4" 
+                                className="w-full h-48 sm:h-72 object-cover rounded-md border mb-2 sm:mb-4"
                             />
-                            <p className="text-gray-600 text-center mb-6">
+                            <p className="text-gray-600 text-center text-sm sm:text-base mb-3 sm:mb-4">
                                 Pilihan oli berkualitas tinggi untuk menjaga performa mesin.
                             </p>
-                            <Link href="/oli-mesin" className="bg-blue-500 text-white text-sm px-6 py-2 rounded-md hover:bg-blue-600">
+                            <Link href="/oli-mesin" className="bg-blue-500 text-white text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-md hover:bg-blue-600">
                                 Beli Oli Mesin
                             </Link>
                         </div>
 
-                        <div className="border bg-card rounded-lg shadow-md p-6 flex flex-col items-center">
-                            <h2 className="text-xl font-bold mb-4">Bahan Bakar Khusus</h2>
+                        {/* Card Bahan Bakar */}
+                        <div className="border bg-white rounded-lg shadow-md p-4 sm:p-6 flex flex-col items-center">
+                            <h2 className="text-md sm:text-lg font-bold mb-2 sm:mb-3">Bahan Bakar Khusus</h2>
                             <img
-                                src='/images/bbm.jpg'
+                                src='/images/Pertamina.png'
                                 alt='BBK'
-                                className="w-full h-80 object-cover rounded-md border mb-4" 
+                                className="w-full h-48 sm:h-72 object-cover rounded-md border mb-2 sm:mb-4"
                             />
-                            <p className="text-gray-600 text-center mb-6">
+                            <p className="text-gray-600 text-center text-sm sm:text-base mb-3 sm:mb-4">
                                 Bahan bakar berkualitas untuk performa maksimal kendaraan Anda.
                             </p>
-                            <Link href="/bahan-bakar" className="bg-blue-500 text-white text-sm px-6 py-2 rounded-md hover:bg-blue-600">
+                            <Link href="/bahan-bakar" className="bg-blue-500 text-white text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-md hover:bg-blue-600">
                                 Beli Bahan Bakar
                             </Link>
                         </div>
