@@ -1,7 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { Inertia } from '@inertiajs/inertia';
 import { useState } from "react";
+import { useForm } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
+import Swal from 'sweetalert2'
+import { usePage } from '@inertiajs/react';
 import { Checkbox } from "@/components/ui/checkbox"
+import { FiShoppingCart } from "react-icons/fi";
 import { Slider } from "@/components/ui/slider"
 import {
     Breadcrumb,
@@ -28,14 +34,13 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
+    CardFooter,
     CardTitle,
 } from "@/components/ui/card"
 import {
     Pagination,
     PaginationContent,
-    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
@@ -43,109 +48,54 @@ import {
 } from "@/components/ui/pagination"
 
 export default function OliMesin() {
-    const [search, setSearch] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6;  // Jumlah item per halaman
-
-    const products = [
-        {
-            id: 1,
-            name: 'Oli Mesin X',
-            price: 50000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 2,
-            name: 'Oli Mesin Y',
-            price: 70000,
-            description: 'Oli berkualitas untuOli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 3,
-            name: 'Oli Mesin X',
-            price: 50000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 4,
-            name: 'Oli Mesin Y',
-            price: 70000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 5,
-            name: 'Oli Mesin X',
-            price: 50000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 6,
-            name: 'Oli Mesin Y',
-            price: 70000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 7,
-            name: 'Oli Mesin X',
-            price: 50000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 8,
-            name: 'Oli Mesin Y',
-            price: 70000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 9,
-            name: 'Oli Mesin X',
-            price: 50000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        {
-            id: 10,
-            name: 'Oli Mesin Y',
-            price: 70000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/2T-Enviro.png',
-        },
-        // Add more products as needed
-    ];
-
-    const filteredProducts = products.filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase())
-    );
-
-    // Hitung total halaman
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-
-    // Ambil produk untuk halaman saat ini
-    const currentProducts = filteredProducts.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
+    const { products, search } = usePage().props; // Data dari backend
+    const [currentPage, setCurrentPage] = useState(products.current_page);
 
     const handlePageChange = (page) => {
-        if (page > 0 && page <= totalPages) {
+        if (page > 0 && page <= products.last_page) {
+            Inertia.get(route("oli-mesin"), { page }, {
+                preserveScroll: true,
+                preserveState: true,
+            }); // Panggil backend untuk halaman baru
             setCurrentPage(page);
         }
     };
+
+    const { data, setData, post, processing, reset } = useForm({
+        product_id: '',
+        qty: 1,
+    })
+      
+    function addToCart(productId) {
+        router.post(route('cart.add'), { product_id: productId, qty: 1 }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Produk Ditambahkan',
+                    text: 'Produk berhasil masuk ke keranjang!',
+                    timer: 1000,
+                    showConfirmButton: false,
+                });
+                router.reload({ only: ['cart'] }); // reload hanya cart, biar nggak reload semua page
+            },
+            onError: (errors) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Produk gagal ditambahkan ke keranjang',
+                });
+            }
+        })
+    }
+      
 
     return (
         <AuthenticatedLayout>
             <Head title="Oli Mesin" />
 
             <div className="py-12">
-            <div className="max-w-7xl mb-4 mx-auto sm:px-6 lg:px-8 bg-white rounded-xl">
+                <div className="max-w-7xl mb-4 mx-auto sm:px-6 lg:px-8 bg-white rounded-xl">
                     <div className="w-full px-4 pt-8 pb-4">
                         <Breadcrumb>
                             <BreadcrumbList>
@@ -223,29 +173,33 @@ export default function OliMesin() {
                             </div>
 
                             <div className="grid sm:grid-cols-3 gap-5 mt-4">
-                                {currentProducts.map((product) => (
+                                {products.data.map(product => (
                                     <Card key={product.id}>
                                         <CardHeader>
                                             <img
-                                                src={product.image}
+                                                src={product.featured_image}
                                                 alt={product.name}
-                                                className="w-full h-auto object-cover rounded-md border" 
+                                                className="w-full h-auto object-cover rounded-md border"
                                             />
                                         </CardHeader>
                                         <CardContent>
-                                            <CardTitle   className="text-lg font-semibold">{product.name}</CardTitle  >
-                                            <CardDescription className="text-gray-600">{product.description}</CardDescription>
-                                            <p className="text-lg font-bold mt-2">Rp {product.price.toLocaleString()}</p>
-                                            <div className='flex justify-end mt-6 space-x-3'>
-                                                <button
-                                                    className=" bg-blue-500 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-600"
-                                                >
-                                                    Beli
+                                            <CardTitle className="text-lg font-semibold">
+                                                {product.name}
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-600">
+                                                {product.body || "Deskripsi tidak tersedia"}
+                                            </CardDescription>
+                                            <p className="text-lg font-bold mt-2">
+                                                Rp {product.price.toLocaleString()}
+                                            </p>
+
+                                            <div className="mt-4 flex justify-end gap-2">
+                                                <button onClick={() => addToCart(product.id)} className="flex items-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm">
+                                                    <FiShoppingCart className="mr-2 text-base" />
+                                                    Keranjang
                                                 </button>
-                                                <button
-                                                    className=" bg-blue-500 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-600"
-                                                >
-                                                    Tambahkan ke Keranjang
+                                                <button className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm">
+                                                    Beli
                                                 </button>
                                             </div>
                                         </CardContent>
@@ -254,25 +208,36 @@ export default function OliMesin() {
                             </div>
 
                             <div className="flex mt-6 justify-center items-center">
-                            <Pagination>
+                                <Pagination>
                                     <PaginationContent>
                                         <PaginationItem>
-                                            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+                                            <PaginationPrevious
+                                                onClick={() => handlePageChange(currentPage - 1)}
+                                            />
                                         </PaginationItem>
 
-                                        {Array.from({ length: totalPages }, (_, i) => (
-                                            <PaginationItem key={i}>
-                                                <PaginationLink
-                                                    onClick={() => handlePageChange(i + 1)}
-                                                    className={currentPage === i + 1 ? "text-blue-600 font-bold" : ""}
-                                                >
-                                                    {i + 1}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        ))}
+                                        {Array.from(
+                                            { length: products.last_page },
+                                            (_, i) => (
+                                                <PaginationItem key={i}>
+                                                    <PaginationLink
+                                                        onClick={() => handlePageChange(i + 1)}
+                                                        className={
+                                                            currentPage === i + 1
+                                                                ? "text-blue-600 font-bold"
+                                                                : ""
+                                                        }
+                                                    >
+                                                        {i + 1}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            )
+                                        )}
 
                                         <PaginationItem>
-                                            <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
+                                            <PaginationNext
+                                                onClick={() => handlePageChange(currentPage + 1)}
+                                            />
                                         </PaginationItem>
                                     </PaginationContent>
                                 </Pagination>

@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CartController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -27,13 +28,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/oli-mesin', function () {
-        return Inertia::render('Customer/OliMesin');
-    })->name('oli-mesin');
+    Route::get('/oli-mesin', [ProductController::class, 'show_product'])->name('oli-mesin');
+
+    Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.detail');
 
     Route::get('/bahan-bakar', function () {
         return Inertia::render('Customer/BahanBakarKhusus');
     })->name('bahan-bakar');
+
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::delete('/cart/item/{item}', [CartController::class, 'removeItem'])->name('cart.item.remove');
+    Route::put('/cart/item/{item}', [CartController::class, 'updateItemQty'])->name('cart.item.update');
 });
 
 // Admin

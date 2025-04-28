@@ -42,6 +42,35 @@ class ProductController extends Controller
         ]);
     }
     
+    public function show_product(Request $request)
+    {
+        $search = $request->query('search');
+        $perPage = $request->query('per_page', 6);
+
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+            })
+            ->paginate($perPage)
+            ->withQueryString() // <- ini penting kalau pakai search
+            ->through(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'price' => $product->price,
+                    'status' => $product->status,
+                    'stock_status' => $product->stock_status,
+                    'featured_image' => $product->featured_image_url,
+                ];
+            });
+
+        return Inertia::render('Customer/OliMesin', [
+            'products' => $products,
+            'search' => $search,
+        ]);
+    }
 
     /**
      * Show the form for creating a new resource.

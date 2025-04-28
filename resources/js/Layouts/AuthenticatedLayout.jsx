@@ -28,7 +28,7 @@ export default function AuthenticatedLayout({ children }) {
 
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className='relative'>
-                                <NavLink href="#">
+                                <NavLink href="/cart">
                                     <FiShoppingCart 
                                         className="text-xl"    
                                     />
