@@ -44,6 +44,22 @@ class UserController extends Controller
 
     }
 
+    public function updateRole(Request $request, User $user)
+    {
+        // Validasi input role
+        $request->validate([
+            'role' => 'required|in:admin,customer', // Pastikan hanya role admin dan customer yang valid
+        ]);
+    
+        // Update role pengguna
+        $user->role = $request->role;
+        $user->save();
+    
+        // Mengirimkan respons sukses
+        return response()->json(['message' => 'Role updated successfully']);
+    }
+    
+
     /**
      * Remove the specified resource from storage.
      */

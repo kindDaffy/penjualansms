@@ -33,6 +33,24 @@ export default function Index() {
         setCurrentPage(selected);
     };
 
+    const handleRoleChange = (userId, newRole) => {
+        axios
+            .put(route("users.updateRole", userId), { role: newRole }) // Kirim request PUT untuk update role
+            .then((response) => {
+                Swal.fire({
+                    icon: "success",
+                    title: "Role updated",
+                    text: "The user's role has been updated successfully.",
+                });
+            })
+            .catch((error) => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "There was an error updating the role.",
+                });
+            });
+    };
 
     // Show success alert on page load if applicable
     useEffect(() => {
@@ -96,7 +114,17 @@ export default function Index() {
                                             </td>
                                             <td className="border border-gray-300 px-4 py-2">{user.name}</td>
                                             <td className="border border-gray-300 px-4 py-2">{user.email}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{user.role}</td>
+                                            <td className="border border-gray-300 px-4 py-2">
+                                                {/* Role select dropdown */}
+                                                <select
+                                                    value={user.role}
+                                                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                    className="py-2 rounded-md"
+                                                >
+                                                    <option value="admin">Admin</option>
+                                                    <option value="customer">Customer</option>
+                                                </select>
+                                            </td>
                                             <td className="border border-gray-300 px-4 py-2">
                                                 <div className="flex space-x-2">
                                                     <Link

@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 
 export default function EditProduct() {
-    const { product } = usePage().props;
+    const { product, categories } = usePage().props;
     const { data, setData,errors } = useForm({
         name: product?.name || "",
         sku: product?.sku || "",
@@ -26,6 +26,7 @@ export default function EditProduct() {
         manage_stock: product.manage_stock === 1 ? true : false,
         qty: product.inventory?.qty || 0,
         low_stock_threshold: product.inventory?.low_stock_threshold || 0,
+        category_id: product?.categories?.length ? product.categories[0].id : "",
     });
 
     const toggleManageStock = async () => {
@@ -37,7 +38,7 @@ export default function EditProduct() {
         }
     };
     
-    const [preview, setPreview] = useState(product?.featured_image || ""); // Untuk preview gambar
+    const [preview, setPreview] = useState(product?.featured_image ? product?.featured_image_url : null); // Untuk preview gambar
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         setData("image", file);
@@ -162,6 +163,24 @@ export default function EditProduct() {
                                     <option value="ACTIVE">Active</option>
                                     <option value="INACTIVE">Inactive</option>
                                 </select>
+                            </div>
+                        </CardContent>
+                        <CardContent>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Category</label>
+                                <select 
+                                    value={data.category_id}
+                                    onChange={(e) => setData("category_id", e.target.value)}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                                >
+                                    <option value="" disabled>--Select Category--</option>
+                                        {categories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                </select>
+                                {errors.category_id && <div className="text-red-500 text-sm">{errors.category_id}</div>}
                             </div>
                         </CardContent>
                         <CardHeader>
