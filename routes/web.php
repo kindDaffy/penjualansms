@@ -50,6 +50,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('/admin/products', ProductController::class);
     Route::post('/admin/produk/{id}',[ProductController::class,'update']);
     Route::resource('/admin/users', UserController::class)->except(['show']);
+    // Admin - Update Role
+    Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
 
     Route::get('/admin', function () {
         return Inertia::render('AdminDashboard');
