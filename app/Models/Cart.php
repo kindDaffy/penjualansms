@@ -36,4 +36,9 @@ class Cart extends Model
     {
         return $this->items->sum('qty');
     }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
+    }
 }

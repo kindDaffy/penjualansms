@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'forceFormData' => true,
+            'cart' => Cart::with(['items.product'])->where('user_id', auth()->id())->first(),
         ];
     }
 }

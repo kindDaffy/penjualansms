@@ -6,8 +6,10 @@ import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { FiShoppingCart } from "react-icons/fi";
 
-export default function AuthenticatedLayout({ children }) {
+export default function AuthenticatedLayout({ auth, children }) {
     const user = usePage().props.auth.user;
+
+    const { cart } = usePage().props;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -35,7 +37,7 @@ export default function AuthenticatedLayout({ children }) {
                                     <span 
                                         className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs"
                                     >
-                                        0
+                                        {cart?.items?.length || 0}
                                     </span>
                                 </NavLink>
                             </div>

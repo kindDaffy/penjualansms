@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('shop_carts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('user_id')->index()->nullable();
+            $table->uuid('user_id')->nullable()->index();
+            $table->foreignUuid('coupon_id')->nullable()->constrained('shop_coupons')->nullOnDelete();
+        
             $table->datetime('expired_at')->index();
             $table->decimal('base_total_price', 16, 2)->default(0);
             $table->decimal('tax_amount', 16, 2)->default(0);
@@ -21,11 +23,12 @@ return new class extends Migration
             $table->decimal('discount_amount', 16, 2)->default(0);
             $table->decimal('discount_percent', 16, 2)->default(0);
             $table->decimal('grand_total', 16, 2)->default(0);
+        
             $table->softDeletes();
             $table->timestamps();
-
+        
             $table->foreign('user_id')->references('id')->on('users');
-        });
+        });        
     }
 
     /**

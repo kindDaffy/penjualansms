@@ -2,13 +2,13 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { Inertia } from '@inertiajs/inertia';
 import { useState } from "react";
-import { useForm } from '@inertiajs/react'
-import { router } from '@inertiajs/react'
-import Swal from 'sweetalert2'
+import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/react';
 import { Checkbox } from "@/components/ui/checkbox"
 import { FiShoppingCart } from "react-icons/fi";
-import { Slider } from "@/components/ui/slider"
+import { Slider } from "@/components/ui/slider";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/pagination"
 
 export default function OliMesin() {
-    const { products, search } = usePage().props; // Data dari backend
+    const { products, search } = usePage().props;
     const [currentPage, setCurrentPage] = useState(products.current_page);
 
     const handlePageChange = (page) => {
@@ -56,16 +56,11 @@ export default function OliMesin() {
             Inertia.get(route("oli-mesin"), { page }, {
                 preserveScroll: true,
                 preserveState: true,
-            }); // Panggil backend untuk halaman baru
+            });
             setCurrentPage(page);
         }
     };
-
-    const { data, setData, post, processing, reset } = useForm({
-        product_id: '',
-        qty: 1,
-    })
-      
+    
     function addToCart(productId) {
         router.post(route('cart.add'), { product_id: productId, qty: 1 }, {
             preserveScroll: true,
@@ -77,7 +72,7 @@ export default function OliMesin() {
                     timer: 1000,
                     showConfirmButton: false,
                 });
-                router.reload({ only: ['cart'] }); // reload hanya cart, biar nggak reload semua page
+                router.reload({ only: ['cart'] });
             },
             onError: (errors) => {
                 Swal.fire({
@@ -89,7 +84,6 @@ export default function OliMesin() {
         })
     }
       
-
     return (
         <AuthenticatedLayout>
             <Head title="Oli Mesin" />

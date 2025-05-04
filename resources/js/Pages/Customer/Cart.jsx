@@ -1,8 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { usePage } from '@inertiajs/react'
-import { router } from '@inertiajs/react'
-import Swal from 'sweetalert2'
+import { usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
+import Swal from 'sweetalert2';
 import { FaRegTrashCan } from "react-icons/fa6";
 import { FiPlus } from "react-icons/fi";
 import { FiMinus } from "react-icons/fi";
@@ -67,9 +68,35 @@ export default function Cart(){
         }
     }
 
+    const { data, setData, post, processing } = useForm({ code: '' });
+    const handleApplyCoupon = (e) => {
+        e.preventDefault();
+        post(route('cart.apply-coupon'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Kode promo berhasil diterapkan.',
+                });
+                setData('code', '');
+                Inertia.reload({ only: ['cart'] });
+            },            
+            onError: (errors) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: errors.code || 'Terjadi kesalahan.',
+                });
+            }
+        });
+    };
+
     const itemSubtotal = cart?.items?.reduce((total, item) => {
         return total + (item.qty * item.product.price);
     }, 0);
+    const discountAmount = cart.discount_amount || 0;
+    const grandTotal = (itemSubtotal - discountAmount);
 
     return (
         <AuthenticatedLayout>
@@ -147,27 +174,50 @@ export default function Cart(){
                             )}
                         </div>
 
-                        <div className="w-1/3 p-3 bg-white border-2 border-gray-200 flex flex-col rounded-lg">
-                            <h1 className="mb-5 font-bold">Summary</h1>
+                        <div className="w-1/3 flex flex-col ">
+                            <div className="p-3 bg-white border-2 border-gray-200 rounded-lg">
+                                <h1 className="mb-5 font-bold">Summary</h1>
 
-                            <div className="flex flex-col justify-between space-y-0 mb-4">
-                                <div className="border-2 border-gray-200 p-2 flex justify-between text-sm rounded-t-md">
-                                    <p>Item Subtotal</p>
-                                    <p>Rp. {itemSubtotal.toLocaleString('id-ID')}</p>
+                                <div className="flex flex-col justify-between space-y-0 mb-4">
+                                    <div className="border-2 border-gray-200 p-2 flex justify-between text-sm rounded-t-md">
+                                        <p>Item Subtotal</p>
+                                        <p>Rp. {itemSubtotal.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <div className="border-x-2 border-gray-200 p-2 flex justify-between text-sm">
+                                        <p>Discount</p>
+                                        <p className="text-red-500">- Rp. {discountAmount.toLocaleString('id-ID')}</p>
+                                    </div>
+                                    <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-bold rounded-b-md">
+                                        <p>Subtotal</p>
+                                        <p>Rp. {grandTotal.toLocaleString('id-ID')}</p>
+                                    </div>
                                 </div>
-                                <div className="border-x-2 border-gray-200 p-2 flex justify-between text-sm">
-                                    <p>Ongkir</p>
-                                    <p>Rp. 5.000</p> {/* fix ongkir */}
-                                </div>
-                                <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-bold rounded-b-md">
-                                    <p>Subtotal</p>
-                                    <p>Rp. {(itemSubtotal + 5000).toLocaleString('id-ID')}</p>
-                                </div>
+
+                                <button className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
+                                    Checkout
+                                </button>
                             </div>
 
-                            <button className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
-                                Checkout
-                            </button>
+                            <div className="p-3 bg-white border-2 border-gray-200 rounded-lg mt-4">
+                                <h1 className="mb-5 font-bold">Promo</h1>
+                                <p className="text-sm mb-2">Gunakan kode promo untuk mendapatkan diskon tambahan.</p>
+                                <form onSubmit={handleApplyCoupon}>
+                                    <input
+                                        type="text"
+                                        value={data.code}
+                                        onChange={(e) => setData('code', e.target.value)}
+                                        placeholder="Masukkan kode promo"
+                                        className="border-2 border-gray-200 p-2 rounded-md w-full mb-2"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 w-full"
+                                    >
+                                        Gunakan Kode Promo
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
