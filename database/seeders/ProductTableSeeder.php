@@ -29,9 +29,9 @@ class ProductTableSeeder extends Seeder
         $this->command->info('Default attributes seeded.');
         $attributeWeight = Attribute::where('code', Attribute::ATTR_WEIGHT)->first();
 
-        Category::factory()->count(10)->create();
-        $this->command->info('Categories seeded.');
-        $randomCategoryIDs = Category::all()->random()->limit(2)->pluck('id');
+        // Category::factory()->count(10)->create();
+        // $this->command->info('Categories seeded.');
+        // $randomCategoryIDs = Category::all()->random()->limit(2)->pluck('id');
 
         Tag::factory()->count(10)->create();
         $this->command->info('Tags seeded.');
@@ -45,7 +45,7 @@ class ProductTableSeeder extends Seeder
                 'manage_stock' => $manageStock,
             ]);
             
-            $product->categories()->sync($randomCategoryIDs);
+            // $product->categories()->sync($randomCategoryIDs);
             $product->tags()->sync($randomTagIDs);
 
             ProductAttribute::create([

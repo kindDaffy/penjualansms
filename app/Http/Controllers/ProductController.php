@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -107,11 +108,14 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $product = Product::with('inventory')->findOrFail($id);
-
+        
+        $product = Product::with('inventory', 'categories')->findOrFail($id);
+        $categories = Category::all();
+        $product->featured_image_url = $product->featured_image ? asset("storage/{$product->featured_image}") : null;
         return Inertia::render('Admin/EditProduct', [
             'product' => $product,
-
+            'categories' => $categories,
+            
         ]);
     }
 
@@ -137,6 +141,7 @@ class ProductController extends Controller
             'body'           => 'nullable|string',
             'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:4096|min:50',
             'manage_stock'   => 'required|boolean',
+            'category_id' => 'nullable|exists:shop_categories,id', // Validasi kategori
             'qty'            => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
             'low_stock_threshold' => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
 
@@ -150,6 +155,11 @@ class ProductController extends Controller
         }
         
         $product->update($validated);
+
+        // Sync kategori yang dipilih untuk produk
+        if ($request->has('category_id')) {
+            $product->categories()->sync([$request->category_id]);  // Menyinkronkan kategori yang dipilih
+        }
 
         if ($request->manage_stock) {
             $product->inventory()->updateOrCreate(
