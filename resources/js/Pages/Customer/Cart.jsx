@@ -3,6 +3,9 @@ import { Head } from "@inertiajs/react";
 import { usePage } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FaRegTrashCan } from "react-icons/fa6";
 import { FiPlus } from "react-icons/fi";
@@ -18,6 +21,26 @@ import {
 
 export default function Cart(){
     const { cart } = usePage().props
+    const [loading, setLoading] = useState(false);
+
+    // Handle Checkout
+    const handleCheckout = async () => {
+        setLoading(true);
+        try {
+            // Kirim request ke backend untuk mendapatkan snap token
+            const response = await axios.post('/checkout', { order_id: cart.id });
+
+            const { snapToken, order } = response.data;
+
+            // Redirect ke halaman CheckoutPayment dengan membawa snapToken dan order
+            history.push('/checkout/payment', { snapToken, order });
+
+        } catch (error) {
+            console.error("Error during checkout:", error);
+            alert("Checkout failed!");
+        }
+        setLoading(false);
+    };
 
     const handleRemove = (itemId) => {
         Swal.fire({
@@ -193,8 +216,12 @@ export default function Cart(){
                                     </div>
                                 </div>
 
-                                <button className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
-                                    Checkout
+                                <button
+                                    onClick={handleCheckout}
+                                    disabled={loading}
+                                    className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                                >
+                                    {loading ? "Processing..." : "Checkout"}
                                 </button>
                             </div>
 

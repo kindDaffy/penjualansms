@@ -65,6 +65,49 @@ class CartController extends Controller
         return back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
+    public function buy(Request $request)
+    {
+        $request->validate([
+            'product_id' => ['required', 'exists:shop_products,id'],
+            'qty' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $user = auth()->user();
+
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $user->id],
+            ['expired_at' => now()->addDays(7)]
+        );
+
+        $product = Product::findOrFail($request->product_id);
+
+        $cartItem = $cart->items()->where('product_id', $product->id)->first();
+
+        if ($cartItem) {
+            $cartItem->qty += $request->qty;
+            $cartItem->save();
+        } else {
+            $cart->items()->create([
+                'product_id' => $product->id,
+                'qty' => $request->qty,
+                'price' => $product->price,
+            ]);
+        }
+
+        $baseTotal = $cart->items->sum(function ($item) {
+            return $item->qty * $item->price;
+        });
+
+        $cart->update([
+            'base_total_price' => $baseTotal,
+            'tax_amount' => 0, 
+            'discount_amount' => 0, 
+            'grand_total' => $baseTotal,
+        ]);
+
+        return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan dan diarahkan ke keranjang!');
+    }
+
     public function removeItem(Request $request, $itemId)
     {
         $item = CartItem::where('id', $itemId)
@@ -80,21 +123,30 @@ class CartController extends Controller
 
     public function updateItemQty(Request $request, $itemId)
     {
-        $request->validate([
-            'qty' => 'required|integer|min:1',
-        ]);
-
+        // Validasi input qty
         $item = CartItem::where('id', $itemId)
             ->whereHas('cart', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
 
+        $category = $item->product->categories->first(); 
+        $minQty = 1; 
+
+        if ($category && $category->slug == 'bbk') {
+            $minQty = 5;
+        }
+
+        $request->validate([
+            'qty' => "required|integer|min:$minQty",
+        ]);
+
         $item->qty = $request->qty;
         $item->save();
 
         return back()->with('success', 'Jumlah item berhasil diperbarui.');
     }
+
 
     public function applyCoupon(Request $request)
     {

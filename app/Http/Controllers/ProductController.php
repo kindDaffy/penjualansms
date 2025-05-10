@@ -14,6 +14,8 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */    
+
+    // Bagian Admin
     public function index(Request $request)
     {
         $search = $request->query('search'); // Ambil nilai pencarian dari query string
@@ -40,36 +42,6 @@ class ProductController extends Controller
             'products' => $products,
             'search' => $search, // Kirim search term ke frontend
             'success' => session('success'),
-        ]);
-    }
-    
-    public function show_product(Request $request)
-    {
-        $search = $request->query('search');
-        $perPage = $request->query('per_page', 6);
-
-        $products = Product::query()
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
-            })
-            ->paginate($perPage)
-            ->withQueryString() // <- ini penting kalau pakai search
-            ->through(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'sku' => $product->sku,
-                    'price' => $product->price,
-                    'status' => $product->status,
-                    'stock_status' => $product->stock_status,
-                    'featured_image' => $product->featured_image_url,
-                ];
-            });
-
-        return Inertia::render('Customer/OliMesin', [
-            'products' => $products,
-            'search' => $search,
         ]);
     }
 
@@ -202,6 +174,75 @@ class ProductController extends Controller
             'success' => true,
             'message' => 'Manage stock updated successfully',
             'manage_stock' => $product->manage_stock
+        ]);
+    }
+
+    // Bagian Customer
+    public function show_product_oli(Request $request)
+    {
+        $search = $request->query('search');
+        $perPage = $request->query('per_page', 6);
+
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+            })
+            ->whereHas('categories', function($query) {
+                $query->where('slug', 'like', 'oli%'); // Filter kategori yang namanya diawali dengan 'Oli'
+            })
+
+            ->paginate($perPage)
+            ->withQueryString() // <- ini penting kalau pakai search
+            ->through(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'price' => $product->price,
+                    'status' => $product->status,
+                    'stock_status' => $product->stock_status,
+                    'featured_image' => $product->featured_image_url,
+                ];
+            });
+
+        return Inertia::render('Customer/OliMesin', [
+            'products' => $products,
+            'search' => $search,
+        ]);
+    }
+
+    public function show_product_bbk(Request $request)
+    {
+        $search = $request->query('search');
+        $perPage = $request->query('per_page', 6);
+
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                            ->orWhere('sku', 'like', "%{$search}%");
+            })
+            ->whereHas('categories', function($query) {
+                $query->where('slug', 'like', 'bbk%');
+            })
+
+            ->paginate($perPage)
+            ->withQueryString() // <- ini penting kalau pakai search
+            ->through(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'price' => $product->price,
+                    'status' => $product->status,
+                    'stock_status' => $product->stock_status,
+                    'featured_image' => $product->featured_image_url,
+                ];
+            });
+
+        return Inertia::render('Customer/BahanBakarKhusus', [
+            'products' => $products,
+            'search' => $search,
         ]);
     }
 }

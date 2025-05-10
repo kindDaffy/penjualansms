@@ -1,8 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
+import { usePage } from '@inertiajs/react';
 import { useState } from "react";
-import { Checkbox } from "@/components/ui/checkbox"
-import { Slider } from "@/components/ui/slider"
+import { router } from '@inertiajs/react';
+import Swal from 'sweetalert2';
+import { FiShoppingCart } from "react-icons/fi";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -26,55 +28,41 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination"
 
 export default function OliMesin() {
-    const [search, setSearch] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 6;  // Jumlah item per halaman
+    const { products, search } = usePage().props;
+    const [loadingId, setLoadingId] = useState(null);
 
-    const products = [
-        {
-            id: 1,
-            name: 'Pertamax',
-            price: 12900,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/Pertamax.png',
-        },
-        {
-            id: 2,
-            name: 'Pertamax Turbo',
-            price: 14000,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/Pertamax Turbo.png',
-        },
-        {
-            id: 3,
-            name: 'Dexlite',
-            price: 14600,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/Dexlite.png',
-        },
-        {
-            id: 4,
-            name: 'Pertamina Dex',
-            price: 14800,
-            description: 'Oli berkualitas untuk performa terbaik.',
-            image: '/images/Pertamina Dex.png',
-        },
-    ];
-
-    const filteredProducts = products.filter((product) =>
-        product.name.toLowerCase().includes(search.toLowerCase())
-    );
+    function addToCart(productId) {
+        router.post(route('cart.add'), { product_id: productId, qty: 5 }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Produk Ditambahkan',
+                    text: 'Produk berhasil masuk ke keranjang!',
+                    timer: 1000,
+                    showConfirmButton: false,
+                });
+                router.reload({ only: ['cart'] });
+            },
+            onError: (errors) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: 'Produk gagal ditambahkan ke keranjang',
+                });
+            }
+        })
+    }
+    
+    function buy(productId){
+        setLoadingId(productId);
+        router.post(route('cart.buy'), { product_id: productId, qty: 5 }, {
+            preserveScroll: true,
+            nFinish: () => setLoadingId(null),
+        })
+    }
 
     return (
         <AuthenticatedLayout>
@@ -116,30 +104,47 @@ export default function OliMesin() {
                                 </Select>
                             </div>
 
+                            <p className="mt-3 text-sm text-blue-500 italic">Note: Pembelian Bahan Bakar Khusus minimal 5 liter</p>
+
                             <div className="grid grid-cols-2 gap-5 mt-4">
-                                {filteredProducts.map((product) => (
+                                {products.data.map(product => (
                                     <Card key={product.id}>
                                         <CardHeader>
                                             <img
-                                                src={product.image}
+                                                src={product.featured_image}
                                                 alt={product.name}
-                                                className="w-full h-auto object-cover rounded-md border" 
+                                                className="w-full h-auto object-cover rounded-md border"
                                             />
                                         </CardHeader>
                                         <CardContent>
-                                            <CardTitle   className="text-lg font-semibold">{product.name}</CardTitle  >
-                                            <CardDescription className="text-gray-600">{product.description}</CardDescription>
-                                            <p className="text-lg font-bold mt-2">Rp {product.price.toLocaleString()}/Liter</p>
-                                            <div className='flex justify-end mt-6 space-x-3'>
-                                                <button
-                                                    className=" bg-blue-500 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-600"
-                                                >
-                                                    Beli
+                                            <CardTitle className="text-lg font-semibold">
+                                                {product.name}
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-600">
+                                                {product.body || "Deskripsi tidak tersedia"}
+                                            </CardDescription>
+                                            <p className="text-lg font-bold mt-2">
+                                                Rp {product.price.toLocaleString()}
+                                            </p>
+
+                                            <div className="mt-4 flex justify-end gap-2">
+                                                <button onClick={() => addToCart(product.id)} className="flex items-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm">
+                                                    <FiShoppingCart className="mr-2 text-base" />
+                                                    Keranjang
                                                 </button>
                                                 <button
-                                                    className=" bg-blue-500 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-600"
+                                                    onClick={() => buy(product.id)}
+                                                    disabled={loadingId === product.id}
+                                                    className={`bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm flex items-center justify-center ${loadingId === product.id ? 'opacity-70' : ''}`}
                                                 >
-                                                    Tambahkan ke Keranjang
+                                                    {loadingId === product.id ? (
+                                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z" />
+                                                        </svg>
+                                                    ) : (
+                                                        'Beli'
+                                                    )}
                                                 </button>
                                             </div>
                                         </CardContent>

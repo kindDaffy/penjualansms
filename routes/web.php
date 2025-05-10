@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -23,25 +25,25 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle']);
+
 // Customer
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::get('/oli-mesin', [ProductController::class, 'show_product'])->name('oli-mesin');
-
-    Route::get('/products/{id}', [ProductController::class, 'show'])->name('products.detail');
-
-    Route::get('/bahan-bakar', function () {
-        return Inertia::render('Customer/BahanBakarKhusus');
-    })->name('bahan-bakar');
+    Route::get('/oli-mesin', [ProductController::class, 'show_product_oli'])->name('oli-mesin');
+    Route::get('/bahan-bakar', [ProductController::class, 'show_product_bbk'])->name('bbk');
 
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/buy', [CartController::class, 'buy'])->name('cart.buy');
     Route::delete('/cart/item/{item}', [CartController::class, 'removeItem'])->name('cart.item.remove');
     Route::put('/cart/item/{item}', [CartController::class, 'updateItemQty'])->name('cart.item.update');
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+
+    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
 });
 
 // Admin

@@ -50,6 +50,7 @@ import {
 export default function OliMesin() {
     const { products, search } = usePage().props;
     const [currentPage, setCurrentPage] = useState(products.current_page);
+    const [loadingId, setLoadingId] = useState(null);
 
     const handlePageChange = (page) => {
         if (page > 0 && page <= products.last_page) {
@@ -81,6 +82,14 @@ export default function OliMesin() {
                     text: 'Produk gagal ditambahkan ke keranjang',
                 });
             }
+        })
+    }
+
+    function buy(productId){
+        setLoadingId(productId);
+        router.post(route('cart.buy'), { product_id: productId, qty: 1 }, {
+            preserveScroll: true,
+            nFinish: () => setLoadingId(null),
         })
     }
       
@@ -139,11 +148,6 @@ export default function OliMesin() {
                                             </AccordionContent>
                                     </AccordionItem>
                                 </Accordion>
-                                
-                                <div>
-                                    <p className="text-lg font-bold mt-4">Range Harga</p>
-                                    <Slider defaultValue={[10]} max={100} step={1} className="mt-2"/>
-                                </div>
                             </div>
                         </div>
                         <div className="w-5/6 p-4 flex flex-col">
@@ -192,8 +196,19 @@ export default function OliMesin() {
                                                     <FiShoppingCart className="mr-2 text-base" />
                                                     Keranjang
                                                 </button>
-                                                <button className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm">
-                                                    Beli
+                                                <button
+                                                    onClick={() => buy(product.id)}
+                                                    disabled={loadingId === product.id}
+                                                    className={`bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm flex items-center justify-center ${loadingId === product.id ? 'opacity-70' : ''}`}
+                                                >
+                                                    {loadingId === product.id ? (
+                                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z" />
+                                                        </svg>
+                                                    ) : (
+                                                        'Beli'
+                                                    )}
                                                 </button>
                                             </div>
                                         </CardContent>
