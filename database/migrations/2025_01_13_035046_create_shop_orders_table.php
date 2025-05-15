@@ -16,6 +16,7 @@ return new class extends Migration
             $table->uuid('user_id')->index();
             $table->string('code')->unique();
             $table->string('status');
+            $table->uuid('coupon_id')->nullable();
             $table->uuid('approved_by')->nullable();
             $table->datetime('approved_at')->nullable();
             $table->uuid('cancelled_by')->nullable();
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->text('cancellation_note')->nullable();
             $table->datetime('order_date');
             $table->datetime('payment_due');
+            $table->string('payment_url')->nullable();
             $table->decimal('base_total_price', 16, 2)->default(0);
             $table->decimal('tax_amount', 16, 2)->default(0);
             $table->decimal('tax_percent', 16, 2)->default(0);
@@ -44,6 +46,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('coupon_id')->references('id')->on('shop_coupons')->nullOnDelete();
             $table->foreign('approved_by')->references('id')->on('users');
             $table->foreign('cancelled_by')->references('id')->on('users');
             $table->index('code');

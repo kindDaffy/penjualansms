@@ -11,7 +11,13 @@ class Coupon extends Model
 
     protected $table = 'shop_coupons';
 
-    protected $fillable = ['code', 'discount_percent', 'discount_amount', 'valid_until'];
+    protected $fillable = [
+        'code', 
+        'discount_percent', 
+        'discount_amount', 
+        'valid_until',
+        'quota',
+    ];
 
     public function users()
     {

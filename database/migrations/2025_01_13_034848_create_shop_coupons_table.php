@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('discount_percent', 5, 2)->nullable(); // Contoh: 10.00 untuk 10%
             $table->decimal('discount_amount', 16, 2)->nullable();
             $table->dateTime('valid_until')->nullable(); // opsional
+            $table->integer('quota')->default(0);
             $table->timestamps();
         });
     }

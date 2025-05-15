@@ -22,9 +22,11 @@ class CheckoutController extends Controller
             return redirect()->back()->with('error', 'Keranjang kosong.');
         }
 
-        $baseTotal = $cart->items->sum(fn($item) => $item->qty * $item->price);
+        $baseTotal = $cart->base_total_price;
+        $discountAmount = $cart->discount_amount;
+        $grandTotal = $cart->grand_total;
 
-        // Pastikan data customer diisi sebelum menyimpan Order
+        // Buat Order
         $order = Order::create([
             'user_id' => $user->id,
             'code' => Order::generateCode(),
@@ -32,16 +34,16 @@ class CheckoutController extends Controller
             'order_date' => now(),
             'payment_due' => now()->addDays(1),
             'base_total_price' => $baseTotal,
-            'discount_amount' => 0,
+            'discount_amount' => $discountAmount,
             'tax_amount' => 0,
-            'grand_total' => $baseTotal,
-            'customer_first_name' => $user->first_name ?? 'Default First Name', // Pastikan data ada
-            'customer_last_name' => $user->last_name ?? 'Default Last Name',
-            'customer_email' => $user->email ?? 'default@example.com', // Pastikan email ada
-            'customer_phone' => $user->phone ?? '000000000', // Pastikan phone ada
+            'grand_total' => $grandTotal,
+            'customer_first_name' => $user->first_name ?? 'Guest',
+            'customer_last_name' => $user->last_name ?? '',
+            'customer_email' => $user->email ?? 'guest@example.com',
+            'customer_phone' => $user->phone ?? '000000000',
         ]);
 
-        // Menambahkan items ke dalam order
+        // Buat Order Item
         foreach ($cart->items as $item) {
             $order->items()->create([
                 'product_id' => $item->product_id,
@@ -56,7 +58,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Midtrans payment integration
+        // Konfigurasi Midtrans
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
@@ -70,6 +72,7 @@ class CheckoutController extends Controller
             'customer_details' => [
                 'first_name' => $user->first_name,
                 'email' => $user->email,
+                'phone' => $user->phone,
             ],
             'enabled_payments' => Payment::PAYMENT_CHANNELS,
             'expiry' => [
@@ -79,15 +82,36 @@ class CheckoutController extends Controller
             ],
         ];
 
-        $snapToken = Snap::getSnapToken($payload);
-        $order->update(['payment_url' => $snapToken]);
+        $midtransTransaction = Snap::createTransaction($payload);
+
+        // Simpan Payment
+        Payment::create([
+            'user_id' => $user->id,
+            'order_id' => $order->id,
+            'payment_type' => 'midtrans',
+            'status' => 'PENDING',
+            'amount' => $order->grand_total,
+            'token' => $midtransTransaction->token,
+            'redirect_url' => $midtransTransaction->redirect_url,
+            'payloads' => json_encode($payload), // untuk debugging
+        ]);
+
+        // Simpan redirect URL ke order
+        $order->update(['payment_url' => $midtransTransaction->redirect_url]);
+
+        $cart->update([
+            'coupon_id' => null,
+            'discount_amount' => 0,
+            'discount_percent' => 0,
+            'grand_total' => $cart->base_total_price,
+        ]);
 
         return response()->json([
-            'snapToken' => $snapToken,
+            'snapToken' => $midtransTransaction->token,
+            'redirectUrl' => $midtransTransaction->redirect_url,
             'order' => $order
         ]);
     }
-
 }
 
 ?>

@@ -12,20 +12,11 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CartController;
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
-
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle']);
+Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle'])->name('midtrans.webhook');
 
 // Customer
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -42,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/cart/item/{item}', [CartController::class, 'removeItem'])->name('cart.item.remove');
     Route::put('/cart/item/{item}', [CartController::class, 'updateItemQty'])->name('cart.item.update');
     Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+    Route::delete('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
 });

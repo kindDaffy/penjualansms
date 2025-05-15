@@ -4,7 +4,6 @@ import { usePage } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { FaRegTrashCan } from "react-icons/fa6";
@@ -23,21 +22,42 @@ export default function Cart(){
     const { cart } = usePage().props
     const [loading, setLoading] = useState(false);
 
-    // Handle Checkout
+    const reloadCart = () => {
+        router.reload({ only: ['cart'], preserveScroll: true });
+    };
+
     const handleCheckout = async () => {
         setLoading(true);
         try {
-            // Kirim request ke backend untuk mendapatkan snap token
-            const response = await axios.post('/checkout', { order_id: cart.id });
+            const response = await axios.post('/checkout');
+            const { snapToken } = response.data;
 
-            const { snapToken, order } = response.data;
+            const snapScript = document.createElement('script');
+            snapScript.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+            snapScript.setAttribute('data-client-key', import.meta.env.VITE_MIDTRANS_CLIENT_KEY);
+            snapScript.async = true;
+            document.body.appendChild(snapScript);
 
-            // Redirect ke halaman CheckoutPayment dengan membawa snapToken dan order
-            history.push('/checkout/payment', { snapToken, order });
-
+            snapScript.onload = () => {
+                window.snap.pay(snapToken, {
+                    onSuccess: function (result) {
+                        Swal.fire('Berhasil', 'Pembayaran berhasil!', 'success');
+                        window.location.href = '/dashboard';
+                    },
+                    onPending: function (result) {
+                        Swal.fire('Menunggu', 'Pembayaran sedang diproses.', 'info');
+                    },
+                    onError: function (result) {
+                        Swal.fire('Gagal', 'Terjadi kesalahan saat pembayaran.', 'error');
+                    },
+                    onClose: function () {
+                        Swal.fire('Dibatalkan', 'Kamu belum menyelesaikan pembayaran.', 'warning');
+                    }
+                });
+            };
         } catch (error) {
-            console.error("Error during checkout:", error);
-            alert("Checkout failed!");
+            console.error("Checkout error:", error);
+            Swal.fire('Gagal', 'Checkout gagal. Coba lagi.', 'error');
         }
         setLoading(false);
     };
@@ -56,6 +76,7 @@ export default function Cart(){
             if (result.isConfirmed) {
                 router.delete(route('cart.item.remove', itemId), {
                     onSuccess: () => {
+                        console.log('Coupon removed successfully');
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil',
@@ -63,7 +84,7 @@ export default function Cart(){
                             timer: 1000,
                             showConfirmButton: false,
                         });
-                        router.reload({ only: ['cart'] });
+                        reloadCart();
                     },
                     onError: () => {
                         Swal.fire({
@@ -95,15 +116,14 @@ export default function Cart(){
     const handleApplyCoupon = (e) => {
         e.preventDefault();
         post(route('cart.apply-coupon'), {
-            preserveScroll: true,
             onSuccess: () => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil!',
                     text: 'Kode promo berhasil diterapkan.',
-                });
-                setData('code', '');
-                Inertia.reload({ only: ['cart'] });
+                }).then(() => {
+                    reloadCart();
+                })
             },            
             onError: (errors) => {
                 Swal.fire({
@@ -113,13 +133,46 @@ export default function Cart(){
                 });
             }
         });
+        setData('code', '');
+        reloadCart();
     };
 
-    const itemSubtotal = cart?.items?.reduce((total, item) => {
-        return total + (item.qty * item.product.price);
-    }, 0);
-    const discountAmount = cart.discount_amount || 0;
-    const grandTotal = (itemSubtotal - discountAmount);
+    const handleRemoveCoupon = () => {
+        Swal.fire({
+            title: 'Yakin ingin membatalkan?',
+            text: 'Penggunaan kupon ini akan dibatalkan!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, batalkan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(route('cart.remove-coupon'), {
+                    preserveState: true,
+                    onSuccess: () => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Kupon dibatalkan',
+                            text: 'Diskon telah dihapus dari keranjang.',
+                            timer: 1000,
+                            showConfirmButton: false,
+                        }).then(() => {
+                            reloadCart();
+                        })
+                    },
+                    onError: (error) => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: error.message || 'Gagal membatalkan kupon.',
+                        });
+                    }
+                });
+            }
+        });
+    };
 
     return (
         <AuthenticatedLayout>
@@ -204,15 +257,15 @@ export default function Cart(){
                                 <div className="flex flex-col justify-between space-y-0 mb-4">
                                     <div className="border-2 border-gray-200 p-2 flex justify-between text-sm rounded-t-md">
                                         <p>Item Subtotal</p>
-                                        <p>Rp. {itemSubtotal.toLocaleString('id-ID')}</p>
+                                        <p>Rp. {Number(cart?.base_total_price || 0).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div className="border-x-2 border-gray-200 p-2 flex justify-between text-sm">
                                         <p>Discount</p>
-                                        <p className="text-red-500">- Rp. {discountAmount.toLocaleString('id-ID')}</p>
+                                        <p className="text-red-500">- Rp. {Number(cart.discount_amount).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-bold rounded-b-md">
-                                        <p>Subtotal</p>
-                                        <p>Rp. {grandTotal.toLocaleString('id-ID')}</p>
+                                        <p>Grandtotal</p>
+                                        <p>Rp. {Number(cart?.grand_total || 0).toLocaleString('id-ID')}</p>
                                     </div>
                                 </div>
 
@@ -227,23 +280,40 @@ export default function Cart(){
 
                             <div className="p-3 bg-white border-2 border-gray-200 rounded-lg mt-4">
                                 <h1 className="mb-5 font-bold">Promo</h1>
-                                <p className="text-sm mb-2">Gunakan kode promo untuk mendapatkan diskon tambahan.</p>
-                                <form onSubmit={handleApplyCoupon}>
-                                    <input
-                                        type="text"
-                                        value={data.code}
-                                        onChange={(e) => setData('code', e.target.value)}
-                                        placeholder="Masukkan kode promo"
-                                        className="border-2 border-gray-200 p-2 rounded-md w-full mb-2"
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 w-full"
-                                    >
-                                        Gunakan Kode Promo
-                                    </button>
-                                </form>
+
+                                {cart?.coupon ? (
+                                    <div className="p-2 border-2 border-gray-200 mb-2 text-sm text-green-600 rounded-md">
+                                        Kupon <strong>{cart.coupon.code}</strong> sedang aktif — Diskon Rp {Number(cart.discount_amount).toLocaleString('id-ID')}
+
+                                        <button
+                                            onClick={handleRemoveCoupon}
+                                            className=" text-red-500 underline text-xs"
+                                        >
+                                            Batalkan
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm mb-2">Gunakan kode promo untuk mendapatkan diskon tambahan.</p>
+                                )}
+
+                                {!cart?.coupon && (
+                                    <form onSubmit={handleApplyCoupon}>
+                                        <input
+                                            type="text"
+                                            value={data.code}
+                                            onChange={(e) => setData('code', e.target.value)}
+                                            placeholder="Masukkan kode promo"
+                                            className="border-2 border-gray-200 p-2 rounded-md w-full mb-2"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 w-full"
+                                        >
+                                            Gunakan Kode Promo
+                                        </button>
+                                    </form>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -30,7 +30,6 @@ class CartController extends Controller
         ]);
 
         $user = auth()->user();
-
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->id],
             ['expired_at' => now()->addDays(7)]
@@ -51,16 +50,7 @@ class CartController extends Controller
             ]);
         }
 
-        $baseTotal = $cart->items->sum(function ($item) {
-            return $item->qty * $item->price;
-        });
-
-        $cart->update([
-            'base_total_price' => $baseTotal,
-            'tax_amount' => 0, 
-            'discount_amount' => 0, 
-            'grand_total' => $baseTotal,
-        ]);
+        $cart->recalculateTotals();
 
         return back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
@@ -73,7 +63,6 @@ class CartController extends Controller
         ]);
 
         $user = auth()->user();
-
         $cart = Cart::firstOrCreate(
             ['user_id' => $user->id],
             ['expired_at' => now()->addDays(7)]
@@ -94,16 +83,7 @@ class CartController extends Controller
             ]);
         }
 
-        $baseTotal = $cart->items->sum(function ($item) {
-            return $item->qty * $item->price;
-        });
-
-        $cart->update([
-            'base_total_price' => $baseTotal,
-            'tax_amount' => 0, 
-            'discount_amount' => 0, 
-            'grand_total' => $baseTotal,
-        ]);
+        $cart->recalculateTotals();
 
         return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan dan diarahkan ke keranjang!');
     }
@@ -116,37 +96,42 @@ class CartController extends Controller
             })
             ->firstOrFail();
 
+        $cart = $item->cart;
         $item->delete();
+
+        $cart->recalculateTotals();
 
         return back()->with('success', 'Item berhasil dihapus dari keranjang.');
     }
 
     public function updateItemQty(Request $request, $itemId)
     {
-        // Validasi input qty
+        // Ambil item berdasarkan ID dan user yang sedang login
         $item = CartItem::where('id', $itemId)
             ->whereHas('cart', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
 
+        // Aturan minimum qty berdasarkan kategori
         $category = $item->product->categories->first(); 
-        $minQty = 1; 
+        $minQty = ($category && $category->slug == 'bbk') ? 5 : 1;
 
-        if ($category && $category->slug == 'bbk') {
-            $minQty = 5;
-        }
-
+        // Validasi qty
         $request->validate([
             'qty' => "required|integer|min:$minQty",
         ]);
 
+        // Simpan qty baru
         $item->qty = $request->qty;
         $item->save();
 
+        // ✅ Recalculate cart total
+        $cart = $item->cart;
+        $cart->recalculateTotals();
+
         return back()->with('success', 'Jumlah item berhasil diperbarui.');
     }
-
 
     public function applyCoupon(Request $request)
     {
@@ -154,7 +139,7 @@ class CartController extends Controller
             'code' => ['required', 'exists:shop_coupons,code'],
         ], [
             'code.exists' => 'Kode kupon tidak ditemukan.',
-        ]);               
+        ]);
 
         $user = auth()->user();
         $cart = Cart::where('user_id', $user->id)->firstOrFail();
@@ -162,6 +147,11 @@ class CartController extends Controller
 
         if (!$coupon) {
             return back()->withErrors(['code' => 'Kode kupon tidak valid']);
+        }
+
+        // Cek kuota tersedia
+        if ($coupon->quota <= 0) {
+            return back()->withErrors(['code' => 'Kupon tidak tersedia']);
         }
 
         // Cek apakah user sudah pernah pakai kupon ini
@@ -175,20 +165,18 @@ class CartController extends Controller
 
         // Hitung diskon
         $discount = 0;
-
         if ($coupon->discount_amount) {
             $discount = $coupon->discount_amount;
         } elseif ($coupon->discount_percent) {
             $discount = $cart->base_total_price * ($coupon->discount_percent / 100);
         }
 
-
         // Update cart
         $cart->update([
+            'coupon_id' => $coupon->id,
             'discount_amount' => $discount,
             'discount_percent' => $coupon->discount_percent ?? 0,
-            'grand_total' => max(0, $cart->base_total_price - $discount), // jangan sampai minus
-            'coupon_id' => $coupon->id,
+            'grand_total' => max(0, $cart->base_total_price - $discount),
         ]);
 
         // Simpan penggunaan kupon
@@ -197,6 +185,33 @@ class CartController extends Controller
             'coupon_id' => $coupon->id,
         ]);
 
+        $coupon->decrement('quota');
+
         return back()->with('success', 'Kupon berhasil diterapkan!');
+    }
+
+    public function removeCoupon(Request $request)
+    {
+        $user = auth()->user();
+        $cart = Cart::where('user_id', $user->id)->first();
+
+        if ($cart->coupon_id) {
+            $couponId = $cart->coupon_id;
+            
+            CouponUsage::where('user_id', $user->id)
+                ->where('coupon_id', $cart->coupon_id)
+                ->delete();
+
+            Coupon::where('id', $couponId)->increment('quota');
+
+            $cart->update([
+                'coupon_id' => null,
+                'discount_amount' => 0,
+                'discount_percent' => 0,
+                'grand_total' => $cart->base_total_price,
+            ]);
+        }
+
+        return back()->with('success', 'Kupon berhasil dibatalkan.');
     }
 }

@@ -40,7 +40,7 @@ class Order extends Model
         // 'customer_address1',
         // 'customer_address2',
         // 'customer_phone',
-        // 'customer_email',
+        'customer_email',
         // 'customer_city',
         // 'customer_province',
         // 'customer_postcode',

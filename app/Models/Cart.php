@@ -13,6 +13,7 @@ class Cart extends Model
 
     protected $fillable = [
         'user_id',
+        'coupon_id',
         'expired_at',
         'base_total_price',
         'tax_amount',
@@ -40,5 +41,16 @@ class Cart extends Model
     public function coupon()
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function recalculateTotals()
+    {
+        $baseTotal = $this->items->sum(fn($item) => $item->qty * $item->price);
+        $discount = $this->discount_amount ?? 0;
+
+        $this->update([
+            'base_total_price' => $baseTotal,
+            'grand_total' => max(0, $baseTotal - $discount),
+        ]);
     }
 }

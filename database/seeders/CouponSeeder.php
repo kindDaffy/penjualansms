@@ -14,15 +14,10 @@ class CouponSeeder extends Seeder
     public function run(): void
     {
         Coupon::create([
-            'code' => 'DISKON10',
-            'discount_percent' => 10.00,
-            'valid_until' => now()->addDays(10),
-        ]);
-
-        Coupon::create([
             'code' => 'POTONG10K',
             'discount_amount' => 10000,
             'valid_until' => now()->addDays(10),
+            'quota' => 100,
         ]);        
     }
 }
