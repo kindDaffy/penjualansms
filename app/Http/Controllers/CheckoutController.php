@@ -26,24 +26,22 @@ class CheckoutController extends Controller
         $discountAmount = $cart->discount_amount;
         $grandTotal = $cart->grand_total;
 
-        // Buat Order
         $order = Order::create([
             'user_id' => $user->id,
             'code' => Order::generateCode(),
             'status' => Order::STATUS_PENDING,
+            'coupon_id' => $cart->coupon_id,
             'order_date' => now(),
             'payment_due' => now()->addDays(1),
             'base_total_price' => $baseTotal,
             'discount_amount' => $discountAmount,
             'tax_amount' => 0,
             'grand_total' => $grandTotal,
-            'customer_first_name' => $user->first_name ?? 'Guest',
-            'customer_last_name' => $user->last_name ?? '',
-            'customer_email' => $user->email ?? 'guest@example.com',
-            'customer_phone' => $user->phone ?? '000000000',
+            'customer_first_name' => explode(' ', $user->name)[0],
+            'customer_last_name' => explode(' ', $user->name)[1] ?? '',
+            'customer_email' => explode(' ', $user->email)[0] ?? 'guest@example.com',
         ]);
 
-        // Buat Order Item
         foreach ($cart->items as $item) {
             $order->items()->create([
                 'product_id' => $item->product_id,
@@ -58,7 +56,6 @@ class CheckoutController extends Controller
             ]);
         }
 
-        // Konfigurasi Midtrans
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
@@ -70,9 +67,8 @@ class CheckoutController extends Controller
                 'gross_amount' => $order->grand_total,
             ],
             'customer_details' => [
-                'first_name' => $user->first_name,
-                'email' => $user->email,
-                'phone' => $user->phone,
+                'first_name' => explode(' ', $user->name)[0], 
+                'email' => explode(' ', $user->email)[0], 
             ],
             'enabled_payments' => Payment::PAYMENT_CHANNELS,
             'expiry' => [
@@ -84,7 +80,6 @@ class CheckoutController extends Controller
 
         $midtransTransaction = Snap::createTransaction($payload);
 
-        // Simpan Payment
         Payment::create([
             'user_id' => $user->id,
             'order_id' => $order->id,
@@ -93,10 +88,9 @@ class CheckoutController extends Controller
             'amount' => $order->grand_total,
             'token' => $midtransTransaction->token,
             'redirect_url' => $midtransTransaction->redirect_url,
-            'payloads' => json_encode($payload), // untuk debugging
+            'payloads' => json_encode($payload), 
         ]);
 
-        // Simpan redirect URL ke order
         $order->update(['payment_url' => $midtransTransaction->redirect_url]);
 
         $cart->update([
@@ -110,6 +104,26 @@ class CheckoutController extends Controller
             'snapToken' => $midtransTransaction->token,
             'redirectUrl' => $midtransTransaction->redirect_url,
             'order' => $order
+        ]);
+    }
+
+    public function history()
+    {
+        $user = auth()->user();
+
+        $orders = Order::with('items.product')
+            ->where('user_id', $user->id)
+            ->whereIn('status', [
+                Order::STATUS_PENDING,
+                Order::STATUS_CONFIRMED,
+                Order::STATUS_COMPLETED,
+                Order::STATUS_CANCELLED,
+            ])
+            ->orderBy('order_date', 'desc')
+            ->get();
+
+        return Inertia::render('Customer/OrderHistory', [
+            'orders' => $orders,
         ]);
     }
 }

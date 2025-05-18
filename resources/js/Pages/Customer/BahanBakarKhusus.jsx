@@ -1,4 +1,4 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import DynamicLayout from '@/Layouts/DynamicLayout';
 import { Head } from "@inertiajs/react";
 import { usePage } from '@inertiajs/react';
 import { useState } from "react";
@@ -30,12 +30,20 @@ import {
 } from "@/components/ui/card"
 
 export default function OliMesin() {
-    const { products, search } = usePage().props;
+    const { products, search, auth } = usePage().props;
     const [loadingId, setLoadingId] = useState(null);
 
+    const reloadCart = () => {
+        router.reload({ only: ['cart'], preserveScroll: true });
+    };
+
     function addToCart(productId) {
+        if (!auth.user) {
+            router.visit(route('login'));
+            return;
+        }
+
         router.post(route('cart.add'), { product_id: productId, qty: 5 }, {
-            preserveScroll: true,
             onSuccess: () => {
                 Swal.fire({
                     icon: 'success',
@@ -43,20 +51,28 @@ export default function OliMesin() {
                     text: 'Produk berhasil masuk ke keranjang!',
                     timer: 1000,
                     showConfirmButton: false,
-                });
-                router.reload({ only: ['cart'] });
+                }).then(() => {
+                    reloadCart();
+                })
             },
             onError: (errors) => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
                     text: 'Produk gagal ditambahkan ke keranjang',
-                });
+                }).then(() => {
+                    reloadCart();
+                })
             }
         })
     }
     
     function buy(productId){
+        if (!auth.user) {
+            router.visit(route('login'));
+            return;
+        }
+
         setLoadingId(productId);
         router.post(route('cart.buy'), { product_id: productId, qty: 5 }, {
             preserveScroll: true,
@@ -65,7 +81,7 @@ export default function OliMesin() {
     }
 
     return (
-        <AuthenticatedLayout>
+        <DynamicLayout>
             <Head title="Bahan Bakar Khusus" />
 
             <div className="py-12">
@@ -155,7 +171,6 @@ export default function OliMesin() {
                     </div>
                 </div>
             </div>
-            
-        </AuthenticatedLayout>
+        </DynamicLayout>
     )
 }

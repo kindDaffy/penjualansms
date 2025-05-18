@@ -106,27 +106,22 @@ class CartController extends Controller
 
     public function updateItemQty(Request $request, $itemId)
     {
-        // Ambil item berdasarkan ID dan user yang sedang login
         $item = CartItem::where('id', $itemId)
             ->whereHas('cart', function ($query) {
                 $query->where('user_id', auth()->id());
             })
             ->firstOrFail();
 
-        // Aturan minimum qty berdasarkan kategori
         $category = $item->product->categories->first(); 
         $minQty = ($category && $category->slug == 'bbk') ? 5 : 1;
 
-        // Validasi qty
         $request->validate([
             'qty' => "required|integer|min:$minQty",
         ]);
 
-        // Simpan qty baru
         $item->qty = $request->qty;
         $item->save();
 
-        // ✅ Recalculate cart total
         $cart = $item->cart;
         $cart->recalculateTotals();
 
@@ -149,12 +144,10 @@ class CartController extends Controller
             return back()->withErrors(['code' => 'Kode kupon tidak valid']);
         }
 
-        // Cek kuota tersedia
         if ($coupon->quota <= 0) {
             return back()->withErrors(['code' => 'Kupon tidak tersedia']);
         }
 
-        // Cek apakah user sudah pernah pakai kupon ini
         $used = CouponUsage::where('user_id', $user->id)
             ->where('coupon_id', $coupon->id)
             ->exists();
@@ -163,7 +156,6 @@ class CartController extends Controller
             return back()->withErrors(['code' => 'Kupon ini sudah pernah digunakan']);
         }
 
-        // Hitung diskon
         $discount = 0;
         if ($coupon->discount_amount) {
             $discount = $coupon->discount_amount;
@@ -171,7 +163,6 @@ class CartController extends Controller
             $discount = $cart->base_total_price * ($coupon->discount_percent / 100);
         }
 
-        // Update cart
         $cart->update([
             'coupon_id' => $coupon->id,
             'discount_amount' => $discount,
@@ -179,7 +170,6 @@ class CartController extends Controller
             'grand_total' => max(0, $cart->base_total_price - $discount),
         ]);
 
-        // Simpan penggunaan kupon
         CouponUsage::create([
             'user_id' => $user->id,
             'coupon_id' => $coupon->id,

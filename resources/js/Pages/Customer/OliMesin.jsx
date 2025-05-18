@@ -1,14 +1,12 @@
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import DynamicLayout from '@/Layouts/DynamicLayout';
 import { Head } from "@inertiajs/react";
 import { Inertia } from '@inertiajs/inertia';
 import { useState } from "react";
-import { useForm } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/react';
 import { Checkbox } from "@/components/ui/checkbox"
 import { FiShoppingCart } from "react-icons/fi";
-import { Slider } from "@/components/ui/slider";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -48,9 +46,14 @@ import {
 } from "@/components/ui/pagination"
 
 export default function OliMesin() {
-    const { products, search } = usePage().props;
+    const { products, search, auth } = usePage().props;
     const [currentPage, setCurrentPage] = useState(products.current_page);
     const [loadingId, setLoadingId] = useState(null);
+    const selectedCategory = usePage().props.selectedCategory;
+
+    const reloadCart = () => {
+        router.reload({ only: ['cart'], preserveScroll: true });
+    };
 
     const handlePageChange = (page) => {
         if (page > 0 && page <= products.last_page) {
@@ -61,10 +64,37 @@ export default function OliMesin() {
             setCurrentPage(page);
         }
     };
-    
-    function addToCart(productId) {
-        router.post(route('cart.add'), { product_id: productId, qty: 1 }, {
+
+    const handleCategoryFilter = (slug) => {
+        const nextCategory = selectedCategory === slug ? null : slug;
+
+        router.get(route('oli-mesin'), 
+            nextCategory ? { category: nextCategory } : {}, 
+            {
+                preserveScroll: true,
+                preserveState: true,
+            }
+        );
+    };
+
+    const handleSortChange = (value) => {
+        router.get(route('oli-mesin'), {
+            sort: value === 'default' ? null : value,
+            category: selectedCategory,
+            search,
+        }, {
+            preserveState: true,
             preserveScroll: true,
+        });
+    };
+
+    function addToCart(productId) {
+        if (!auth.user) {
+            router.visit(route('login'));
+            return;
+        }
+
+        router.post(route('cart.add'), { product_id: productId, qty: 1 }, {
             onSuccess: () => {
                 Swal.fire({
                     icon: 'success',
@@ -72,20 +102,28 @@ export default function OliMesin() {
                     text: 'Produk berhasil masuk ke keranjang!',
                     timer: 1000,
                     showConfirmButton: false,
-                });
-                router.reload({ only: ['cart'] });
+                }).then(() => {
+                    reloadCart();
+                })
             },
             onError: (errors) => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
                     text: 'Produk gagal ditambahkan ke keranjang',
-                });
+                }).then(() => {
+                    reloadCart();
+                })
             }
         })
     }
 
     function buy(productId){
+        if (!auth.user) {
+            router.visit(route('login'));
+            return;
+        }
+
         setLoadingId(productId);
         router.post(route('cart.buy'), { product_id: productId, qty: 1 }, {
             preserveScroll: true,
@@ -94,7 +132,7 @@ export default function OliMesin() {
     }
       
     return (
-        <AuthenticatedLayout>
+        <DynamicLayout>
             <Head title="Oli Mesin" />
 
             <div className="py-12">
@@ -121,30 +159,48 @@ export default function OliMesin() {
                                         <AccordionTrigger>Oli Motor</AccordionTrigger>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Motor 2 Tak
-                                                <Checkbox />
+                                                <Checkbox
+                                                    checked={selectedCategory === 'oli-motor-2-tak'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-2-tak')}
+                                                />
                                             </AccordionContent>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Motor 4 Tak
-                                                <Checkbox />
+                                                <Checkbox 
+                                                    checked={selectedCategory === 'oli-motor-4-tak'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-4-tak')}
+                                                />
                                             </AccordionContent>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Motor Matic
-                                                <Checkbox />
+                                                <Checkbox 
+                                                    checked={selectedCategory === 'oli-motor-matic'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-matic')}
+                                                />
                                             </AccordionContent>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Motor Bebek
-                                                <Checkbox />
+                                                <Checkbox
+                                                    checked={selectedCategory === 'oli-motor-bebek'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-bebek')}
+                                                />
                                             </AccordionContent>
                                     </AccordionItem>
                                     <AccordionItem value="item-2">
                                         <AccordionTrigger>Oli Mobil</AccordionTrigger>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Mesin Bensin
-                                                <Checkbox />
+                                                <Checkbox
+                                                    checked={selectedCategory === 'oli-mobil-bensin'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-mobil-bensin')}
+                                                />
                                             </AccordionContent>
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Mesin Diesel
-                                                <Checkbox />
+                                                <Checkbox
+                                                    checked={selectedCategory === 'oli-mobil-diesel'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-mobil-diesel')}
+                                                />
                                             </AccordionContent>
                                     </AccordionItem>
                                 </Accordion>
@@ -156,12 +212,12 @@ export default function OliMesin() {
                             </div>
 
                             <div className="flex flex-row mt-4 space-x-2 items-center">
-                                {/* <p className="font-medium">Filter</p> */}
-                                <Select>
+                                <Select onValueChange={handleSortChange} defaultValue="default">
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Urutkan" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="default">Default</SelectItem>
                                         <SelectItem value="ascending">A-Z</SelectItem>
                                         <SelectItem value="descending">Z-A</SelectItem>
                                         <SelectItem value="price-asc">Harga Terendah</SelectItem>
@@ -169,6 +225,12 @@ export default function OliMesin() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {selectedCategory && (
+                                <div className="mt-3 text-sm text-blue-600 mb-2">
+                                    Menampilkan produk : <strong>{selectedCategory.replace(/-/g, ' ')}</strong>
+                                </div>
+                            )}
 
                             <div className="grid sm:grid-cols-3 gap-5 mt-4">
                                 {products.data.map(product => (
@@ -256,6 +318,6 @@ export default function OliMesin() {
                 </div>
             </div>
             
-        </AuthenticatedLayout>
+        </DynamicLayout>
     )
 }

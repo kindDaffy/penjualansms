@@ -83,15 +83,18 @@ export default function Cart(){
                             text: 'Item berhasil dihapus!',
                             timer: 1000,
                             showConfirmButton: false,
-                        });
-                        reloadCart();
+                        }).then(() => {
+                            reloadCart();
+                        })
                     },
                     onError: () => {
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops',
                             text: 'Gagal menghapus item.',
-                        });
+                        }).then(() => {
+                            reloadCart();
+                        })
                     }
                 });
             }
@@ -130,7 +133,9 @@ export default function Cart(){
                     icon: 'error',
                     title: 'Gagal!',
                     text: errors.code || 'Terjadi kesalahan.',
-                });
+                }).then(() => {
+                    reloadCart();
+                })
             }
         });
         setData('code', '');
@@ -167,7 +172,9 @@ export default function Cart(){
                             icon: 'error',
                             title: 'Gagal',
                             text: error.message || 'Gagal membatalkan kupon.',
-                        });
+                        }).then(() => {
+                            reloadCart();
+                        })
                     }
                 });
             }

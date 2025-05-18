@@ -19,6 +19,7 @@ class Order extends Model
         'user_id',
         'code',
         'status',
+        'coupon_id',
         'approved_by',
         'approved_at',
         'cancelled_by',
@@ -37,22 +38,13 @@ class Order extends Model
         'customer_note',
         'customer_first_name',
         'customer_last_name',
-        // 'customer_address1',
-        // 'customer_address2',
-        // 'customer_phone',
         'customer_email',
-        // 'customer_city',
-        // 'customer_province',
-        // 'customer_postcode',
     ];
 
     public const STATUS_PENDING = 'PENDING';
     public const STATUS_CONFIRMED = 'CONFIRMED';
-    public const STATUS_PACKAGING = 'PACKAGING';
-    public const STATUS_DELIVERED = 'DELIVERED';
-    public const STATUS_RECEIVED = 'RECEIVED';
+    public const STATUS_COMPLETED = 'COMPLETED';
     public const STATUS_CANCELLED = 'CANCELLED';
-    public const STATUS_RETURNED = 'RETURNED';
 
     public const ORDER_CODE = 'ORDER';
     

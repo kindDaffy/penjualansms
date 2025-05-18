@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import DynamicLayout from '@/Layouts/DynamicLayout'; 
 import { Head, Link } from '@inertiajs/react';
 import * as React from "react";
 import Autoplay from "embla-carousel-autoplay";
@@ -15,7 +15,7 @@ export default function Home() {
     const autoplayPlugin = React.useMemo(() => Autoplay({ delay: 3000, stopOnInteraction: false }), []);
 
     return (
-        <AuthenticatedLayout>
+        <DynamicLayout>
             <Head title="Home" />
 
             <div className="py-8 sm:py-12">
@@ -90,6 +90,6 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </DynamicLayout>
     );
 }

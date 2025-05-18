@@ -181,19 +181,37 @@ class ProductController extends Controller
     public function show_product_oli(Request $request)
     {
         $search = $request->query('search');
-        $perPage = $request->query('per_page', 6);
+        $perPage = $request->query('per_page', 9);
+        $categorySlug = $request->query('category');
+        $sort = $request->query('sort');
 
         $products = Product::query()
             ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
             })
-            ->whereHas('categories', function($query) {
-                $query->where('slug', 'like', 'oli%'); // Filter kategori yang namanya diawali dengan 'Oli'
+            ->when($categorySlug, function ($query, $slug) {
+                $query->whereHas('categories', function ($q) use ($slug) {
+                    $q->where('slug', $slug);
+                });
+            }, function ($query) {
+                $query->whereHas('categories', function ($q) {
+                    $q->where('slug', 'like', 'oli%');
+                });
             })
-
+            ->when($sort && $sort !== 'default', function ($query) use ($sort) {
+                if ($sort === 'ascending') {
+                    $query->orderBy('name', 'asc');
+                } elseif ($sort === 'descending') {
+                    $query->orderBy('name', 'desc');
+                } elseif ($sort === 'price-asc') {
+                    $query->orderBy('price', 'asc');
+                } elseif ($sort === 'price-dsc') {
+                    $query->orderBy('price', 'desc');
+                }
+            })
             ->paginate($perPage)
-            ->withQueryString() // <- ini penting kalau pakai search
+            ->withQueryString()
             ->through(function ($product) {
                 return [
                     'id' => $product->id,
@@ -206,9 +224,14 @@ class ProductController extends Controller
                 ];
             });
 
+        $categories = Category::where('slug', 'like', 'oli-%')->get();
+
         return Inertia::render('Customer/OliMesin', [
             'products' => $products,
             'search' => $search,
+            'selectedCategory' => $categorySlug,
+            'categories' => $categories,
+            'sort' => $sort, 
         ]);
     }
 

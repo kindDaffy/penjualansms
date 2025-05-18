@@ -75,6 +75,11 @@ export default function AuthenticatedLayout({ auth, children }) {
                                             Profile
                                         </Dropdown.Link>
                                         <Dropdown.Link
+                                            href={route('checkout.history')}
+                                        >
+                                            History
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
                                             as="button"
@@ -158,6 +163,9 @@ export default function AuthenticatedLayout({ auth, children }) {
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Profile
                             </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('checkout.history')}>
+                                History
+                            </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}
@@ -215,7 +223,6 @@ export default function AuthenticatedLayout({ auth, children }) {
                     </div>
                 </div>
             </footer>
-
         </div>
     );
 }
