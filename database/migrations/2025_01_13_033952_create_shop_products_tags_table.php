@@ -12,13 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('shop_products_tags', function (Blueprint $table) {
-            $table->uuid('product_id');
-            $table->uuid('tag_id');
-
-            $table->unique(['product_id', 'tag_id']);
-            $table->foreign('product_id')->references('id')->on('shop_products');
-            $table->foreign('tag_id')->references('id')->on('shop_tags');
-        });
+        $table->uuid('product_id');
+        $table->uuid('tag_id');
+        $table->unique(['product_id', 'tag_id']);
+        $table->foreign('product_id')->references('id')->on('shop_products')->onDelete('cascade'); // Tambahkan onDelete('cascade')
+        $table->foreign('tag_id')->references('id')->on('shop_tags')->onDelete('cascade'); // Tambahkan onDelete('cascade')
+    });
     }
 
     /**
