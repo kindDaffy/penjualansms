@@ -1,6 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { usePage } from '@inertiajs/react';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export default function OrderHistory() {
     const { orders } = usePage().props;
@@ -8,8 +16,21 @@ export default function OrderHistory() {
     return (
         <AuthenticatedLayout>
             <Head title="Order History" />
-            
             <div className="max-w-5xl mx-auto py-8">
+                <div className="mb-8">
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/dashboard">Home</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator /> 
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Order History</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </div>
+
                 <h1 className="text-2xl font-bold mb-6">Riwayat Pembelian</h1>
 
                 {orders.length === 0 ? (

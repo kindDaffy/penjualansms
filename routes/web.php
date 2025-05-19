@@ -35,6 +35,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/order-history', [CheckoutController::class, 'history'])->name('checkout.history');
+
+    Route::get('/checkout/success', function () {
+        return Inertia::render('Customer/OrderSuccess');
+    })->name('checkout.success');
 });
 
 // Admin

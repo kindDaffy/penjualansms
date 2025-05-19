@@ -33,7 +33,6 @@ class Order extends Model
         'tax_percent',
         'discount_amount',
         'discount_percent',
-        'shipping_cost',
         'grand_total',
         'customer_note',
         'customer_first_name',

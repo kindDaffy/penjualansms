@@ -93,11 +93,13 @@ class CheckoutController extends Controller
 
         $order->update(['payment_url' => $midtransTransaction->redirect_url]);
 
+        $cart->items()->delete();
         $cart->update([
             'coupon_id' => null,
             'discount_amount' => 0,
             'discount_percent' => 0,
-            'grand_total' => $cart->base_total_price,
+            'base_total_price' => 0,
+            'grand_total' => 0,
         ]);
 
         return response()->json([
@@ -114,7 +116,6 @@ class CheckoutController extends Controller
         $orders = Order::with('items.product')
             ->where('user_id', $user->id)
             ->whereIn('status', [
-                Order::STATUS_PENDING,
                 Order::STATUS_CONFIRMED,
                 Order::STATUS_COMPLETED,
                 Order::STATUS_CANCELLED,

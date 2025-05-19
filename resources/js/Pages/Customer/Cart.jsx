@@ -42,7 +42,7 @@ export default function Cart(){
                 window.snap.pay(snapToken, {
                     onSuccess: function (result) {
                         Swal.fire('Berhasil', 'Pembayaran berhasil!', 'success');
-                        window.location.href = '/dashboard';
+                        window.location.href = '/checkout/success';
                     },
                     onPending: function (result) {
                         Swal.fire('Menunggu', 'Pembayaran sedang diproses.', 'info');
@@ -187,7 +187,7 @@ export default function Cart(){
 
             <div className="py-12">
                 <div className="max-w-7xl mb-4 mx-auto sm:px-6 lg:px-8">
-                    <div className="">
+                    <div>
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>

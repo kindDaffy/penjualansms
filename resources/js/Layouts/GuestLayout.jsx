@@ -46,7 +46,6 @@ export default function GuestLayout({ children }) {
                                 <li><Link href="/dashboard" className="hover:text-blue-600">Home</Link></li>
                                 <li><Link href="/oli-mesin" className="hover:text-blue-600">Oli Mesin</Link></li>
                                 <li><Link href="/bahan-bakar" className="hover:text-blue-600">Bahan Bakar Khusus</Link></li>
-                                <li><Link href="#" className="hover:text-blue-600">FAQ</Link></li>
                                 <li><Link href="#" className="hover:text-blue-600">Blog</Link></li>
                             </ul>
                         </div>
@@ -54,8 +53,8 @@ export default function GuestLayout({ children }) {
                         {/* Section 3: Contact */}
                         <div className="w-full sm:w-1/4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Company</h3>
-                            <a href="mailto:john@example.com" className="text-blue-600 hover:underline">
-                                john@example.com
+                            <a href="mailto:sidorejomakmursejahera@gmail.com" className="text-blue-600 hover:underline">
+                                sidorejomakmursejahera@gmail.com
                             </a>
                             <p className="mt-2 text-gray-600">
                                 Jl. Raya Semarang-Demak, Bandung Rejo, Demak
