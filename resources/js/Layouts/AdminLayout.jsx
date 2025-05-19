@@ -8,6 +8,7 @@ import { FaFolder } from "react-icons/fa";
 import { MdShoppingBag } from "react-icons/md";
 import { RiShoppingCart2Fill } from "react-icons/ri";
 import { IoPeopleSharp } from "react-icons/io5";
+import { TbReportSearch } from "react-icons/tb";
 
 export default function AdminLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -59,6 +60,13 @@ export default function AdminLayout({ header, children }) {
                     >
                         <IoPeopleSharp className="mr-2"/>
                         Users
+                    </NavLink>
+                    <NavLink
+                        href={route("admin")}
+                        className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
+                    >
+                        <TbReportSearch className="mr-2"/>
+                        Laporan
                     </NavLink>
                 </nav>
             </aside>

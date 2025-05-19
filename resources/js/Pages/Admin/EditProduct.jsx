@@ -81,7 +81,7 @@ export default function EditProduct() {
                 text: "Product updated successfully",
                 icon: "success",
             }).then(() => {
-                router.visit = "/admin/products"; // Redirect after success
+                router.visit("/admin/products"); // Redirect after success
             });
         })
         .catch((error) => {

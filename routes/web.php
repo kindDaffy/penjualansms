@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\MidtransWebhookController;
 use App\Http\Controllers\ProfileController;
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('/admin/categories', CategoryController::class)->except(['show'])->whereUuid('category');
     Route::resource('/admin/products', ProductController::class);
+    Route::resource('/admin', AdminDashboardController::class);
     Route::post('/admin/produk/{id}',[ProductController::class,'update']);
     Route::resource('/admin/users', UserController::class)->except(['show']);
     // Admin - Update Role
