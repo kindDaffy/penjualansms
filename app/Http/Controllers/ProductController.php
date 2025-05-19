@@ -145,7 +145,7 @@ class ProductController extends Controller
             $product->inventory()->delete();
         }        
 
-        return response()->json(['message'=>'sucess']);
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
@@ -153,17 +153,27 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $product->categories()->detach();
+    // Hapus relasi kategori produk
+    $product->categories()->detach();
 
-        foreach ($product->images as $image) {
-            Storage::disk('public')->delete($image->name);
-            $image->delete();
-        }
-
-        $product->delete();
-
-        return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+    // Hapus gambar produk, pastikan gambar ada
+    if ($product->featured_image) {
+        // Hapus gambar dari storage
+        Storage::disk('public')->delete($product->featured_image);
     }
+
+    // Hapus relasi produk dengan tabel lain jika ada (misalnya shop_products_tags, images, dll)
+    foreach ($product->images as $image) {
+        Storage::disk('public')->delete($image->name); // Hapus file gambar
+        $image->delete(); // Hapus entri gambar dari database
+    }
+
+    // Hapus produk
+    $product->delete();
+
+    return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+    }
+
 
     public function toggleManageStock(Request $request, Product $product)
     {
