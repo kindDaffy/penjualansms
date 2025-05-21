@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Head, usePage, useForm, router } from "@inertiajs/react";
+import { Head, usePage, router } from "@inertiajs/react";
 import ReactPaginate from "react-paginate";
 import { FaSearch } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Swal from 'sweetalert2';
 
-export default function Transactions() {
+export default function ListTransaction() {
     const { orders, search, status } = usePage().props;
     const [searchTerm, setSearchTerm] = useState(search || "");
     const [currentPage, setCurrentPage] = useState(0);
@@ -23,41 +24,45 @@ export default function Transactions() {
     };
 
     const handleComplete = (orderId) => {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "Do you want to complete this transaction?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, complete it!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Kirim permintaan ke backend untuk memperbarui status
-            router.post(route('transaction.complete', orderId), {}, {
-                onSuccess: () => {
-                    Swal.fire(
-                        'Completed!',
-                        'Transaction status has been updated to COMPLETED.',
-                        'success'
-                    );
-                },
-                onError: () => {
-                    Swal.fire(
-                        'Error!',
-                        'Failed to update transaction status.',
-                        'error'
-                    );
-                }
-            });
-        }
-    });
-};
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to complete this transaction?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, complete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log('Sending complete request for order:', orderId);
+                
+                // Gunakan router.post dari Inertia.js
+                router.post(route('transaction.complete', orderId), {}, {
+                    onSuccess: () => {
+                        console.log('Transaction completed successfully');
+                        Swal.fire(
+                            'Completed!',
+                            'Transaction status has been updated to COMPLETED.',
+                            'success'
+                        );
+                    },
+                    onError: (errors) => {
+                        console.error('Error completing transaction:', errors);
+                        Swal.fire(
+                            'Error!',
+                            'Failed to update transaction status.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    };
 
     // Handle search term change with debounce
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            router.get(route("transactions.index"), { search: searchTerm, status: selectedStatus }, { preserveState: true });
+            router.get(route("transaction.index"), { search: searchTerm, status: selectedStatus }, { preserveState: true });
         }, 500); // Delay 500ms for debounce
 
         return () => clearTimeout(delayDebounceFn);

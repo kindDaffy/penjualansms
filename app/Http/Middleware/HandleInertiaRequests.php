@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Cart;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,8 +36,12 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'flash' => [
+                'message' => fn () => $request->session()->get('message')
+            ],
             'forceFormData' => true,
             'cart' => Cart::with(['items.product'])->where('user_id', auth()->id())->first(),
+            'confirmedTransactionsCount' => fn () => Order::where('status', 'CONFIRMED')->count(),
         ];
     }
 }

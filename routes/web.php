@@ -12,6 +12,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\TransactionController;
 
 Route::get('/', function () {
@@ -49,7 +50,17 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('/admin/categories', CategoryController::class)->except(['show'])->whereUuid('category');
     Route::resource('/admin/products', ProductController::class);
     Route::resource('/admin/transaction', TransactionController::class);
+    Route::post('/admin/transaction/{order}/complete', [TransactionController::class, 'complete'])
+    ->name('transaction.complete')
+    ->whereUuid('order');
+    Route::get('/admin/coupons', [CouponController::class, 'index'])->name('coupons.index');
+    Route::post('/admin/coupons', [CouponController::class, 'store'])->name('coupons.store');
+    Route::put('/admin/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
+    Route::delete('/admin/coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+    Route::get('/admin/coupons/{coupon}/usage', [CouponController::class, 'usageDetails'])->name('coupons.usage-details');
     Route::resource('/admin/laporan', LaporanController::class);
+    Route::resource('/admin/users', UserController::class)->except(['show']);
+    Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::resource('/admin', AdminDashboardController::class)->names([
         'index' => 'admin', // Menambahkan nama rute untuk method index
         'create' => 'admin.create',
@@ -60,8 +71,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
         'destroy' => 'admin.destroy'
     ]);
     Route::post('/admin/produk/{id}',[ProductController::class,'update']);
-    Route::resource('/admin/users', UserController::class)->except(['show']);
-    Route::put('/admin/users/{user}/role', [UserController::class, 'updateRole'])->name('users.updateRole');
     Route::get('/admin/products/{product}/edit', [ProductController::class, 'edit'])
     ->name('products.edit')
     ->whereUuid('product');

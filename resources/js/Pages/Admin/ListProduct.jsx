@@ -119,10 +119,10 @@ export default function Products() {
                     {/* Add Button */}
                     <button
                         onClick={openAddModal}
-                        className="w-20 h-6 flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
+                        className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
                     >
                         <FaPlus className="mr-2" />
-                        Add
+                        Add Product
                     </button>
                     {/* Search Bar */}
                     <div className="relative">
