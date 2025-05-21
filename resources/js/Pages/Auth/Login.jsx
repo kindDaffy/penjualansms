@@ -75,7 +75,7 @@ export default function Login({ status, canResetPassword }) {
                             }
                         />
                         <span className="ms-2 text-sm text-gray-600">
-                            Remember me
+                            Ingat saya
                         </span>
                     </label>
                 </div>
@@ -86,7 +86,7 @@ export default function Login({ status, canResetPassword }) {
                             href={route('password.request')}
                             className="rounded-md text-sm text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                            Forgot your password?
+                            Lupa password?
                         </Link>
                     )}
 
@@ -96,12 +96,12 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 <div className="flex mx-auto pt-5 items-center justify-center">
-                    <span className='rounded-md text-xs text-gray-600'>Don't have an account?</span>
+                    <span className='rounded-md text-xs text-gray-600'>Belum punya akun?</span>
                     <Link
                         href={route('register')}
                         className="rounded-md text-xs px-2 text-blue-500 text-bold transition underline hover:text-blue-700 focus:outline-none focus-visible:ring-[#FF2D20]"
                     >
-                        Register
+                        Daftar
                     </Link>
                 </div>
             </form>

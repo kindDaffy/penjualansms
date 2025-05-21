@@ -32,9 +32,21 @@ import {
 export default function OliMesin() {
     const { products, search, auth } = usePage().props;
     const [loadingId, setLoadingId] = useState(null);
+    const selectedCategory = usePage().props.selectedCategory;
 
     const reloadCart = () => {
         router.reload({ only: ['cart'], preserveScroll: true });
+    };
+
+    const handleSortChange = (value) => {
+        router.get(route('bbk'), {
+            sort: value === 'default' ? null : value,
+            category: selectedCategory,
+            search,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     function addToCart(productId) {
@@ -88,11 +100,44 @@ export default function OliMesin() {
             return;
         }
 
-        setLoadingId(productId);
-        router.post(route('cart.buy'), { product_id: productId, qty: 5 }, {
-            preserveScroll: true,
-            nFinish: () => setLoadingId(null),
-        })
+        Swal.fire({
+            title: 'Gunakan jerigen dari SPBU?',
+            text: 'Biaya tambahan Rp20.000 akan dikenakan jika menggunakan jerigen dari SPBU.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, pakai jerigen',
+            cancelButtonText: 'Tidak, bawa sendiri',
+        }).then((result) => {
+            const useJerigen = result.isConfirmed;
+
+            setLoadingId(productId);
+            router.post(route('cart.buy'), {
+                product_id: productId,
+                qty: 5,
+                use_jerigen: useJerigen
+            }, {
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Produk Ditambahkan',
+                        text: useJerigen
+                            ? 'Produk + jerigen berhasil masuk ke keranjang!'
+                            : 'Produk berhasil masuk ke keranjang!',
+                        timer: 1000,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        reloadCart();
+                    });
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Produk gagal ditambahkan ke keranjang',
+                    });
+                }
+            });
+        });
     }
 
     return (
@@ -122,11 +167,12 @@ export default function OliMesin() {
 
                             <div className="flex flex-row mt-4 space-x-2 items-center">
                                 {/* <p className="font-medium">Filter</p> */}
-                                <Select>
+                                <Select onValueChange={handleSortChange} defaultValue="default">
                                     <SelectTrigger className="w-[180px]">
                                         <SelectValue placeholder="Urutkan" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="default">Default</SelectItem>
                                         <SelectItem value="ascending">A-Z</SelectItem>
                                         <SelectItem value="descending">Z-A</SelectItem>
                                         <SelectItem value="price-asc">Harga Terendah</SelectItem>
@@ -140,7 +186,7 @@ export default function OliMesin() {
                             <div className="grid grid-cols-2 gap-5 mt-4">
                                 {products.data.map(product => {
                                     const isOutOfStock = product.stock_qty < product.low_stock_threshold;
-                                    const isLowStock = 5 <= product.stock_qty <= 10;
+                                    const isLowStock = product.stock_qty >= 5 && product.stock_qty <= 10;
 
                                     return (
                                         <Card 
@@ -184,7 +230,7 @@ export default function OliMesin() {
                                                     <button
                                                         onClick={() => buy(product.id)}
                                                         disabled={loadingId === product.id || isOutOfStock}
-                                                        className={`px-3 py-2 rounded text-sm flex items-center justify-center ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} ${loadingId === product.id ? 'opacity-70' : ''}`}
+                                                        className={`px-3 py-2 rounded text-sm flex items-center justify-center ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'} ${loadingId === product.id ? 'opacity-70' : ''}`}
                                                     >
                                                         {loadingId === product.id ? (
                                                             <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">

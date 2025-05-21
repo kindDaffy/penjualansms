@@ -94,6 +94,7 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'qty' => $request->qty,
                 'price' => $product->price,
+                'use_jerigen' => $request->input('use_jerigen', false),
             ]);
         }
 

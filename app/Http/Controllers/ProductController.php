@@ -196,9 +196,13 @@ class ProductController extends Controller
         $sort = $request->query('sort');
 
         $products = Product::query()
+            ->leftJoin('shop_product_inventories', 'shop_product_inventories.product_id', '=', 'shop_products.id')
+            ->select('shop_products.*') // penting agar pagination tetap bekerja
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('shop_products.name', 'like', "%{$search}%")
+                    ->orWhere('shop_products.sku', 'like', "%{$search}%");
+                });
             })
             ->when($categorySlug, function ($query, $slug) {
                 $query->whereHas('categories', function ($q) use ($slug) {
@@ -209,17 +213,20 @@ class ProductController extends Controller
                     $q->where('slug', 'like', 'oli%');
                 });
             })
+            // Urutkan stok dulu
+            ->orderByRaw('(shop_product_inventories.qty = 0) asc')
+            // Sorting tambahan dari user
             ->when($sort && $sort !== 'default', function ($query) use ($sort) {
                 if ($sort === 'ascending') {
-                    $query->orderBy('name', 'asc');
+                    $query->orderBy('shop_products.name', 'asc');
                 } elseif ($sort === 'descending') {
-                    $query->orderBy('name', 'desc');
+                    $query->orderBy('shop_products.name', 'desc');
                 } elseif ($sort === 'price-asc') {
-                    $query->orderBy('price', 'asc');
+                    $query->orderBy('shop_products.price', 'asc');
                 } elseif ($sort === 'price-dsc') {
-                    $query->orderBy('price', 'desc');
+                    $query->orderBy('shop_products.price', 'desc');
                 }
-            })  
+            })
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($product) {
@@ -248,7 +255,7 @@ class ProductController extends Controller
             'search' => $search,
             'selectedCategory' => $categorySlug,
             'categories' => $categories,
-            'sort' => $sort, 
+            'sort' => $sort,
         ]);
     }
 
@@ -256,16 +263,32 @@ class ProductController extends Controller
     {
         $search = $request->query('search');
         $perPage = $request->query('per_page', 6);
+        $sort = $request->query('sort');
 
         $products = Product::query()
+            ->leftJoin('shop_product_inventories', 'shop_product_inventories.product_id', '=', 'shop_products.id')
+            ->select('shop_products.*')
             ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                            ->orWhere('sku', 'like', "%{$search}%");
+                return $query->where(function ($q) use ($search) {
+                    $q->where('shop_products.name', 'like', "%{$search}%")
+                    ->orWhere('shop_products.sku', 'like', "%{$search}%");
+                });
             })
-            ->whereHas('categories', function($query) {
+            ->whereHas('categories', function ($query) {
                 $query->where('slug', 'like', 'bbk%');
             })
-
+            ->orderByRaw('(shop_product_inventories.qty = 0) asc')
+            ->when($sort && $sort !== 'default', function ($query) use ($sort) {
+                if ($sort === 'ascending') {
+                    $query->orderBy('shop_products.name', 'asc');
+                } elseif ($sort === 'descending') {
+                    $query->orderBy('shop_products.name', 'desc');
+                } elseif ($sort === 'price-asc') {
+                    $query->orderBy('shop_products.price', 'asc');
+                } elseif ($sort === 'price-dsc') {
+                    $query->orderBy('shop_products.price', 'desc');
+                }
+            })
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($product) {
@@ -290,6 +313,7 @@ class ProductController extends Controller
         return Inertia::render('Customer/BahanBakarKhusus', [
             'products' => $products,
             'search' => $search,
+            'sort' => $sort,
         ]);
     }
 }
