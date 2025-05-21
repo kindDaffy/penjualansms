@@ -43,28 +43,43 @@ export default function OliMesin() {
             return;
         }
 
-        router.post(route('cart.add'), { product_id: productId, qty: 5 }, {
-            onSuccess: () => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Produk Ditambahkan',
-                    text: 'Produk berhasil masuk ke keranjang!',
-                    timer: 1000,
-                    showConfirmButton: false,
-                }).then(() => {
-                    reloadCart();
-                })
-            },
-            onError: (errors) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: 'Produk gagal ditambahkan ke keranjang',
-                }).then(() => {
-                    reloadCart();
-                })
-            }
-        })
+        Swal.fire({
+            title: 'Gunakan jerigen dari SPBU?',
+            text: 'Biaya tambahan Rp20.000 akan dikenakan jika menggunakan jerigen dari SPBU.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, pakai jerigen',
+            cancelButtonText: 'Tidak, bawa sendiri',
+        }).then((result) => {
+            const useJerigen = result.isConfirmed;
+
+            router.post(route('cart.add'), {
+                product_id: productId,
+                qty: 5,
+                use_jerigen: useJerigen
+            }, {
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Produk Ditambahkan',
+                        text: useJerigen
+                            ? 'Produk + jerigen berhasil masuk ke keranjang!'
+                            : 'Produk berhasil masuk ke keranjang!',
+                        timer: 1000,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        reloadCart();
+                    });
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Produk gagal ditambahkan ke keranjang',
+                    });
+                }
+            });
+        });
     }
     
     function buy(productId){
@@ -123,49 +138,68 @@ export default function OliMesin() {
                             <p className="mt-3 text-sm text-blue-500 italic">Note: Pembelian Bahan Bakar Khusus minimal 5 liter</p>
 
                             <div className="grid grid-cols-2 gap-5 mt-4">
-                                {products.data.map(product => (
-                                    <Card key={product.id}>
-                                        <CardHeader>
-                                            <img
-                                                src={product.featured_image}
-                                                alt={product.name}
-                                                className="w-full h-auto object-cover rounded-md border"
-                                            />
-                                        </CardHeader>
-                                        <CardContent>
-                                            <CardTitle className="text-lg font-semibold">
-                                                {product.name}
-                                            </CardTitle>
-                                            <CardDescription className="text-gray-600">
-                                                {product.body || "Deskripsi tidak tersedia"}
-                                            </CardDescription>
-                                            <p className="text-lg font-bold mt-2">
-                                                Rp {product.price.toLocaleString()}
-                                            </p>
+                                {products.data.map(product => {
+                                    const isOutOfStock = product.stock_qty < product.low_stock_threshold;
+                                    const isLowStock = 5 <= product.stock_qty <= 10;
 
-                                            <div className="mt-4 flex justify-end gap-2">
-                                                <button onClick={() => addToCart(product.id)} className="flex items-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 text-sm">
-                                                    <FiShoppingCart className="mr-2 text-base" />
-                                                    Keranjang
-                                                </button>
-                                                <button
-                                                    onClick={() => buy(product.id)}
-                                                    disabled={loadingId === product.id}
-                                                    className={`bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm flex items-center justify-center ${loadingId === product.id ? 'opacity-70' : ''}`}
-                                                >
-                                                    {loadingId === product.id ? (
-                                                        <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z" />
-                                                        </svg>
-                                                    ) : (
-                                                        'Beli'
-                                                    )}
-                                                </button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                    return (
+                                        <Card 
+                                            key={product.id} 
+                                            className={isOutOfStock ? 'opacity-50 bg-gray-100 cursor-not-allowed' : ''}
+                                        >
+                                            <CardHeader>
+                                                <img
+                                                    src={product.featured_image}
+                                                    alt={product.name}
+                                                    className="w-full h-auto object-cover rounded-md border"
+                                                />
+                                            </CardHeader>
+                                            <CardContent>
+                                                <CardTitle className="text-lg font-semibold">
+                                                    {product.name}
+                                                </CardTitle>
+                                                <CardDescription className="text-gray-600">
+                                                    {product.body || "Deskripsi tidak tersedia"}
+                                                </CardDescription>
+
+                                                {isOutOfStock ? (
+                                                    <p className="text-red-600 font-semibold mt-2">Stok Habis</p>
+                                                ) : isLowStock ? (
+                                                    <p className="text-orange-500 font-medium mt-2">Stok hampir habis</p>
+                                                ) : null}
+
+                                                <p className="text-lg font-bold mt-2">
+                                                    Rp {product.price.toLocaleString()}
+                                                </p>
+
+                                                <div className="mt-4 flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => addToCart(product.id)}
+                                                        disabled={isOutOfStock}
+                                                        className={`flex items-center px-3 py-2 rounded text-sm ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                                                    >
+                                                        <FiShoppingCart className="mr-2 text-base" />
+                                                        Keranjang
+                                                    </button>
+                                                    <button
+                                                        onClick={() => buy(product.id)}
+                                                        disabled={loadingId === product.id || isOutOfStock}
+                                                        className={`px-3 py-2 rounded text-sm flex items-center justify-center ${isOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} ${loadingId === product.id ? 'opacity-70' : ''}`}
+                                                    >
+                                                        {loadingId === product.id ? (
+                                                            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 11-8 8z" />
+                                                            </svg>
+                                                        ) : (
+                                                            'Beli'
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

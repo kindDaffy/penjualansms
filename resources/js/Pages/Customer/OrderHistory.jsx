@@ -16,7 +16,7 @@ export default function OrderHistory() {
     return (
         <AuthenticatedLayout>
             <Head title="Order History" />
-            <div className="max-w-5xl mx-auto py-8">
+            <div className="max-w-5xl mx-auto py-16">
                 <div className="mb-8">
                     <Breadcrumb>
                         <BreadcrumbList>
@@ -34,7 +34,7 @@ export default function OrderHistory() {
                 <h1 className="text-2xl font-bold mb-6">Riwayat Pembelian</h1>
 
                 {orders.length === 0 ? (
-                    <p className="text-gray-600">Belum ada riwayat pembelian.</p>
+                    <p className="text-gray-600 mb-56">Belum ada riwayat pembelian.</p>
                 ) : (
                     <div className="space-y-4">
                         {orders.map(order => (

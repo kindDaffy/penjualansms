@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -60,27 +61,20 @@ class Order extends Model
     public static function generateCode()
     {
         $dateCode = self::ORDER_CODE . '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/';
+        
+        $uuid = substr(Str::uuid()->toString(), 0, 18);
 
-        $lastOrder = self::select([DB::raw('MAX(shop_orders.code) AS last_code')])
-            ->where('code', 'like', $dateCode . '%')
-            ->first();
+        $orderCode = $dateCode . $uuid;
 
-        $lastOrderCode = !empty($lastOrder) ? $lastOrder['last_code'] : null;
-
-        $orderCode = $dateCode . '00001';
-        if ($lastOrderCode) {
-            $lastOrderNumber = str_replace($dateCode, '', $lastOrderCode);
-            $nextOrderNumber = sprintf('%05d', (int)$lastOrderNumber + 1);
-
-            $orderCode = $dateCode . $nextOrderNumber;
-        }
-
-        if (self::isCodeExists($orderCode)) {
-            return self::generateCode();
+        // Pastikan unik
+        while (self::where('code', $orderCode)->exists()) {
+            $uuid = substr(Str::uuid()->toString(), 0, 18);
+            $orderCode = $dateCode . $uuid;
         }
 
         return $orderCode;
     }
+
 
     private static function isCodeExists($orderCode)
     {

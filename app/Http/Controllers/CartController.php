@@ -15,10 +15,23 @@ class CartController extends Controller
 {
     public function index(Request $request)
     {
-        $cart = Cart::with(['items.product', 'coupon'])->where('user_id', auth()->id())->first();
+        $cart = Cart::with(['items.product.categories', 'coupon']) // tambahkan categories
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($cart) {
+            $cart->recalculateTotals(); // panggil ini agar jerigen_count dihitung
+        }
 
         return Inertia::render('Customer/Cart', [
-            'cart' => $cart,
+            'cart' => [
+                'items' => $cart?->items,
+                'base_total_price' => $cart?->base_total_price,
+                'grand_total' => $cart?->grand_total,
+                'discount_amount' => $cart?->discount_amount,
+                'jerigen_count' => $cart?->jerigen_count ?? 0,
+                'coupon' => $cart?->coupon,
+            ],
         ]);
     }
 
@@ -47,6 +60,7 @@ class CartController extends Controller
                 'product_id' => $product->id,
                 'qty' => $request->qty,
                 'price' => $product->price,
+                'use_jerigen' => $request->input('use_jerigen', false),
             ]);
         }
 

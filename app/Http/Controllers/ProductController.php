@@ -219,18 +219,25 @@ class ProductController extends Controller
                 } elseif ($sort === 'price-dsc') {
                     $query->orderBy('price', 'desc');
                 }
-            })
+            })  
             ->paginate($perPage)
             ->withQueryString()
             ->through(function ($product) {
+                $qty = $product->inventory->qty ?? 0;
+                $low = $product->inventory->low_stock_threshold ?? 0;
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'price' => $product->price,
                     'status' => $product->status,
-                    'stock_status' => $product->stock_status,
+                    'body' => $product->body,
+                    'excerpt' => $product->excerpt,
                     'featured_image' => $product->featured_image_url,
+                    'stock_qty' => $qty,
+                    'low_stock_threshold' => $low,
+                    'stock_status' => $qty == 0 ? 'out' : ($qty <= $low ? 'low' : 'available'),
                 ];
             });
 
@@ -260,16 +267,23 @@ class ProductController extends Controller
             })
 
             ->paginate($perPage)
-            ->withQueryString() // <- ini penting kalau pakai search
+            ->withQueryString()
             ->through(function ($product) {
+                $qty = $product->inventory->qty ?? 0;
+                $low = $product->inventory->low_stock_threshold ?? 0;
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'price' => $product->price,
                     'status' => $product->status,
-                    'stock_status' => $product->stock_status,
+                    'body' => $product->body,
+                    'excerpt' => $product->excerpt,
                     'featured_image' => $product->featured_image_url,
+                    'stock_qty' => $qty,
+                    'low_stock_threshold' => $low,
+                    'stock_status' => $qty == 0 ? 'out' : ($qty <= $low ? 'low' : 'available'),
                 ];
             });
 

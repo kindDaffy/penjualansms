@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('qty');
             $table->timestamps();
             $table->decimal('price', 16, 2)->default(0);
+            $table->boolean('use_jerigen')->default(false);
 
             $table->foreign('cart_id')->references('id')->on('shop_carts');
             $table->foreign('product_id')->references('id')->on('shop_products');

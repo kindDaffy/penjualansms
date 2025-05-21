@@ -57,7 +57,11 @@ export default function Cart(){
             };
         } catch (error) {
             console.error("Checkout error:", error);
-            Swal.fire('Gagal', 'Checkout gagal. Coba lagi.', 'error');
+            if (error.response?.status === 422) {
+                Swal.fire('Gagal', error.response.data.error, 'error');
+            } else {
+                Swal.fire('Gagal', 'Checkout gagal. Coba lagi.', 'error');
+            }
         }
         setLoading(false);
     };
@@ -263,13 +267,21 @@ export default function Cart(){
 
                                 <div className="flex flex-col justify-between space-y-0 mb-4">
                                     <div className="border-2 border-gray-200 p-2 flex justify-between text-sm rounded-t-md">
-                                        <p>Item Subtotal</p>
+                                        <p>Subtotal Barang</p>
                                         <p>Rp. {Number(cart?.base_total_price || 0).toLocaleString('id-ID')}</p>
                                     </div>
                                     <div className="border-x-2 border-gray-200 p-2 flex justify-between text-sm">
-                                        <p>Discount</p>
+                                        <p>Diskon</p>
                                         <p className="text-red-500">- Rp. {Number(cart.discount_amount).toLocaleString('id-ID')}</p>
                                     </div>
+                                    
+                                    {cart?.jerigen_count > 0 && (
+                                        <div className="border-x-2 border-t-2 border-gray-200 p-2 flex justify-between text-sm">
+                                            <p>Biaya Jerigen (20.000 x {cart.jerigen_count})</p>
+                                            <p>Rp. {(cart.jerigen_count * 20000).toLocaleString('id-ID')}</p>
+                                        </div>
+                                    )}
+
                                     <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-bold rounded-b-md">
                                         <p>Grandtotal</p>
                                         <p>Rp. {Number(cart?.grand_total || 0).toLocaleString('id-ID')}</p>

@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('type');
             $table->string('name');
             $table->json('attributes');
+            $table->boolean('use_jerigen')->default(false); // true = beli jerigen
             $table->timestamps();
 
             $table->foreign('order_id')->references('id')->on('shop_orders');

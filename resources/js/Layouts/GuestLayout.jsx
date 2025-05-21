@@ -36,11 +36,13 @@ export default function GuestLayout({ children }) {
                             <h1 className="text-2xl font-bold text-gray-800">
                                 PT. Sidorejo Makmur Sejahtera
                             </h1>
-                            <p className="mt-2 text-gray-600">Lorem ipsum dolor sit amet</p>
+                            <p className="mt-2 text-gray-600">
+                                PT Sidorejo Makmur Sejahtera merupakan perusahaan yang bergerak di bidang migas dan retail, dengan komitmen untuk menyediakan layanan energi dan kebutuhan sehari-hari yang berkualitas bagi masyarakat.
+                            </p>
                         </div>
 
                         {/* Section 2: Navigation */}
-                        <div className="w-full sm:w-1/4 mb-6">
+                        <div className="w-full sm:w-1/4 mb-6 pl-4">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4">Navigation</h3>
                             <ul className="space-y-2 text-gray-600">
                                 <li><Link href="/dashboard" className="hover:text-blue-600">Home</Link></li>

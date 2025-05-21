@@ -29,6 +29,7 @@ class OrderItem extends Model
         'type',
         'name',
         'attributes',
+        'use_jerigen',
     ];
     
     protected static function newFactory()
