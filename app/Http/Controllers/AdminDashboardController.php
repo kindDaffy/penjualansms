@@ -23,7 +23,7 @@ class AdminDashboardController extends Controller
                 'base_total_price',
                 'order_date'
             )
-            ->where('status', Order::STATUS_CONFIRMED)
+            ->where('status', Order::STATUS_COMPLETED)
             ->orderBy('order_date', 'desc')
             ->take(5)
             ->get();
@@ -48,7 +48,7 @@ class AdminDashboardController extends Controller
                 DB::raw('MONTH(order_date) as month'),
                 DB::raw('SUM(base_total_price) as total_revenue')
             )
-            ->where('status', Order::STATUS_CONFIRMED)
+            ->where('status', Order::STATUS_COMPLETED)
             ->whereYear('order_date', $currentYear)
             ->groupBy(DB::raw('MONTH(order_date)'))
             ->orderBy('month')
