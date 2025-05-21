@@ -145,10 +145,10 @@ export default function Index() {
                     {/* Add Button */}
                     <button
                         onClick={openAddModal}
-                        className="w-20 h-6 flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
+                        className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
                     >
                         <FaPlus className="mr-2" />
-                        Add
+                        Add Category
                     </button>
                     {/* Search Bar */}
                     <div className="relative">

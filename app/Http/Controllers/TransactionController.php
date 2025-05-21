@@ -34,6 +34,19 @@ class TransactionController extends Controller
         ]);
     }
 
+    public function complete(Order $order)
+    {
+        try {
+            // Update status order menjadi COMPLETED
+            $order->status = 'COMPLETED';
+            $order->save();
+             
+            return redirect()->back()->with('success', 'Transaction has been completed successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to complete transaction: ' . $e->getMessage());
+        }
+    }
+    
     /**
      * Show the form for creating a new resource.
      */

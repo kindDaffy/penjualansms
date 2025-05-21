@@ -8,10 +8,12 @@ import { FaFolder } from "react-icons/fa";
 import { MdShoppingBag } from "react-icons/md";
 import { RiShoppingCart2Fill } from "react-icons/ri";
 import { IoPeopleSharp } from "react-icons/io5";
+import { RiCoupon3Fill  } from "react-icons/ri";
 import { TbReportSearch } from "react-icons/tb";
 
 export default function AdminLayout({ header, children }) {
-    const user = usePage().props.auth.user;
+    const { auth, confirmedTransactionsCount } = usePage().props;
+    const user = auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
@@ -47,12 +49,33 @@ export default function AdminLayout({ header, children }) {
                         <MdShoppingBag className="mr-2"/>
                         Products
                     </NavLink>
+                    <div className="relative">
+                        <NavLink
+                            href={route("transaction.index")}
+                            className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
+                        >
+                            <div className="flex items-center">
+                                <RiShoppingCart2Fill className="mr-2"/>
+                                <span>Transactions</span>
+                                {confirmedTransactionsCount > 0 && (
+                                    <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {confirmedTransactionsCount}
+                                    </span>
+                                )}
+                            </div>
+                        </NavLink>
+                        {confirmedTransactionsCount > 0 && (
+                            <div className="text-red-500 text-xs font-medium pl-10 mt-1">
+                                {confirmedTransactionsCount} Transaksi Baru
+                            </div>
+                        )}
+                    </div>
                     <NavLink
-                        href={route("transaction.index")}
+                        href={route("coupons.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
-                        <RiShoppingCart2Fill className="mr-2"/>
-                        Transactions
+                        <RiCoupon3Fill  className="mr-2"/>
+                        Coupons
                     </NavLink>
                     <NavLink
                         href={route("users.index")}
