@@ -48,7 +48,7 @@ export default function AdminLayout({ header, children }) {
                         Products
                     </NavLink>
                     <NavLink
-                        href={route("transactions")}
+                        href={route("transaction.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <RiShoppingCart2Fill className="mr-2"/>
@@ -62,7 +62,7 @@ export default function AdminLayout({ header, children }) {
                         Users
                     </NavLink>
                     <NavLink
-                        href={route("admin")}
+                        href={route("laporan.index")}
                         className="block px-6 py-3 text-lg text-white hover:bg-white rounded-lg transition-all duration-200 ease-in-out"
                     >
                         <TbReportSearch className="mr-2"/>

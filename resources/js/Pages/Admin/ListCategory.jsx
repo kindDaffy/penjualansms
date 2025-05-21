@@ -214,8 +214,8 @@ export default function Index() {
                         <div className="mt-6 ">
                         {/* Pagination */}
                         <ReactPaginate
-                            previousLabel={"← Previous"}
-                            nextLabel={"Next →"}
+                            previousLabel={"← Sebelumnya"}
+                            nextLabel={"Selanjutnya →"}
                             pageCount={pageCount}
                             onPageChange={handlePageChange}
                             containerClassName={"flex justify-center mt-4 space-x-2"}
