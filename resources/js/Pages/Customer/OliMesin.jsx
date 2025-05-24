@@ -47,7 +47,7 @@ import {
 
 export default function OliMesin() {
     const { products, search, auth } = usePage().props;
-    const [currentPage, setCurrentPage] = useState(products.current_page);
+    const [currentPage, setCurrentPage] = useState(products.current_page || 1);
     const [loadingId, setLoadingId] = useState(null);
     const selectedCategory = usePage().props.selectedCategory;
     const [searchText, setSearchText] = useState(search || '');
@@ -56,13 +56,24 @@ export default function OliMesin() {
         router.reload({ only: ['cart'], preserveScroll: true });
     };
 
+    useEffect(() => {
+        setCurrentPage(products.current_page || 1);
+    }, [products.current_page]);
+
     const handlePageChange = (page) => {
-        if (page > 0 && page <= products.last_page) {
-            Inertia.get(route("oli-mesin"), { page }, {
+        if (page > 0 && page <= products.last_page && page !== currentPage) {
+            // Cara 1: Menggunakan router.visit (lebih eksplisit)
+            router.visit(route("oli-mesin"), {
+                method: 'get',
+                data: {
+                    page: page,
+                    search: search || '',
+                    category: selectedCategory || '',
+                    per_page: products.per_page || 9
+                },
                 preserveScroll: true,
                 preserveState: true,
             });
-            setCurrentPage(page);
         }
     };
 
@@ -345,20 +356,22 @@ export default function OliMesin() {
                                         <PaginationItem>
                                             <PaginationPrevious
                                                 onClick={() => handlePageChange(currentPage - 1)}
+                                                disabled={currentPage <= 1} // disable jika halaman pertama
+                                                className={currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                                             />
                                         </PaginationItem>
 
                                         {Array.from(
                                             { length: products.last_page },
                                             (_, i) => (
-                                                <PaginationItem key={i}>
+                                                <PaginationItem key={i + 1}>
                                                     <PaginationLink
                                                         onClick={() => handlePageChange(i + 1)}
-                                                        className={
+                                                        className={`cursor-pointer ${
                                                             currentPage === i + 1
-                                                                ? "text-blue-600 font-bold"
-                                                                : ""
-                                                        }
+                                                                ? "text-blue-600 font-bold bg-blue-50"
+                                                                : "hover:bg-gray-50"
+                                                        }`}
                                                     >
                                                         {i + 1}
                                                     </PaginationLink>
@@ -369,6 +382,8 @@ export default function OliMesin() {
                                         <PaginationItem>
                                             <PaginationNext
                                                 onClick={() => handlePageChange(currentPage + 1)}
+                                                disabled={currentPage >= products.last_page} // disable jika halaman terakhir
+                                                className={currentPage >= products.last_page ? "pointer-events-none opacity-50" : "cursor-pointer"}
                                             />
                                         </PaginationItem>
                                     </PaginationContent>

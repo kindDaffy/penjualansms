@@ -25,7 +25,22 @@ class CartController extends Controller
 
         return Inertia::render('Customer/Cart', [
             'cart' => [
-                'items' => $cart?->items,
+                'items' => $cart?->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'qty' => $item->qty,
+                        'price' => $item->price,
+                        'use_jerigen' => $item->use_jerigen,
+                        'product' => [
+                            'id' => $item->product->id,
+                            'name' => $item->product->name,
+                            'price' => $item->product->price,
+                            'sku' => $item->product->sku,
+                            'featured_image' => $item->product->featured_image,
+                            'featured_image_url' => $item->product->featured_image_url,
+                        ]
+                    ];
+                }),
                 'base_total_price' => $cart?->base_total_price,
                 'grand_total' => $cart?->grand_total,
                 'discount_amount' => $cart?->discount_amount,

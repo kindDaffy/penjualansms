@@ -120,11 +120,11 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)->where('id', $this->featured_image);
     }
 
-    public function getFeaturedImageUrlAttribute()
-    {
-        return $this->featured_image 
-            ? asset("storage/{$this->featured_image}") 
-            : asset('https://placehold.jp/150x150.png'); // Gambar default jika tidak ada
-    }    
+public function getFeaturedImageUrlAttribute()
+{
+    return $this->featured_image 
+        ? asset("storage/product-images/{$this->featured_image}") 
+        : asset('https://placehold.jp/150x150.png');
+}
 
 }

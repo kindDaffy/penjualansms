@@ -217,7 +217,7 @@ export default function Cart(){
                                         <div className="flex justify-between space-x-2">
                                             <div className="w-1/2 flex">
                                                 <img
-                                                    src={item.product?.featured_image}
+                                                    src={item.product?.featured_image_url || '/images/default.png'}
                                                     alt={item.product?.name}
                                                     className="w-16 h-auto object-cover rounded-md border"
                                                 />
