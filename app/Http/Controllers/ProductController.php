@@ -25,6 +25,7 @@ class ProductController extends Controller
                 return $query->where('name', 'like', "%{$search}%")
                              ->orWhere('sku', 'like', "%{$search}%");
             })
+            ->orderBy('sku', 'asc')
             ->get()
             ->map(function ($product) {
                 return [
