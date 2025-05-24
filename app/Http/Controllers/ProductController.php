@@ -252,10 +252,10 @@ class ProductController extends Controller
 
         return Inertia::render('Customer/OliMesin', [
             'products' => $products,
-            'search' => $search,
+            'search' => $search ?? '',
             'selectedCategory' => $categorySlug,
             'categories' => $categories,
-            'sort' => $sort,
+            'sort' => $sort ?? 'default',
         ]);
     }
 

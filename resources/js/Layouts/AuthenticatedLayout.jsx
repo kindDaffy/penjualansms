@@ -185,7 +185,7 @@ export default function AuthenticatedLayout({ auth, children }) {
                     <div className="flex flex-wrap justify-between">
                         {/* Section 1: Company Info */}
                         <div className="w-full sm:w-1/2 mb-6">
-                            <h1 className="text-2xl font-bold text-gray-800">
+                            <h1 className="text-2xl font-semibold text-gray-800">
                                 PT. Sidorejo Makmur Sejahtera
                             </h1>
                             <p className="mt-2 text-gray-600">
@@ -219,7 +219,7 @@ export default function AuthenticatedLayout({ auth, children }) {
                     {/* Footer Bottom */}
                     <div className="mt-10 flex flex-col sm:flex-row justify-between items-center border-t pt-6">
                         <p className="text-gray-600 text-center sm:text-left">
-                            &copy; 2025 SMS Shop. All rights reserved.
+                            &copy; {new Date().getFullYear()} SMS Shop. All rights reserved.
                         </p>
                     </div>
                 </div>

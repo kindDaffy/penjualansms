@@ -4,6 +4,8 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import LoginGuestLayout from '@/Layouts/LoginGuestLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ResetPassword({ token, email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -12,6 +14,12 @@ export default function ResetPassword({ token, email }) {
         password: '',
         password_confirmation: '',
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+        
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
 
     const submit = (e) => {
         e.preventDefault();
@@ -45,16 +53,27 @@ export default function ResetPassword({ token, email }) {
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                    <div className="relative">
+                        <TextInput
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={data.password}
+                            className="mt-1 block w-full text-sm p-3 pr-10"
+                            autoComplete="new-password"
+                            isFocused={true}
+                            onChange={(e) => setData('password', e.target.value)}
+                            placeholder="Masukkan password baru"
+                            required
+                        />
+
+                        <div
+                            className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-600"
+                            onClick={togglePasswordVisibility}
+                        >
+                            {showPassword ? <FaEye /> : <FaEyeSlash />}
+                        </div>
+                    </div>
 
                     <InputError message={errors.password} className="mt-2" />
                 </div>
@@ -65,17 +84,28 @@ export default function ResetPassword({ token, email }) {
                         value="Confirm Password"
                     />
 
-                    <TextInput
-                        type="password"
-                        id="password_confirmation"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                    />
+                    <div className="relative">
+                        <TextInput
+                            id="password_confirmation"
+                            type={showPassword ? "text" : "password"}
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            className="mt-1 block w-full text-sm p-3 pr-10"
+                            autoComplete="new-password"
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
+                            placeholder="Ketik ulang password"
+                            required
+                        />
+                        
+                        <div
+                            className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-600"
+                            onClick={togglePasswordVisibility}
+                        >
+                            {showPassword ? <FaEye /> : <FaEyeSlash />}
+                        </div>
+                    </div>
 
                     <InputError
                         message={errors.password_confirmation}

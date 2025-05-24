@@ -1,7 +1,7 @@
 import DynamicLayout from '@/Layouts/DynamicLayout';
 import { Head } from "@inertiajs/react";
 import { Inertia } from '@inertiajs/inertia';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { router } from '@inertiajs/react';
 import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/react';
@@ -50,6 +50,7 @@ export default function OliMesin() {
     const [currentPage, setCurrentPage] = useState(products.current_page);
     const [loadingId, setLoadingId] = useState(null);
     const selectedCategory = usePage().props.selectedCategory;
+    const [searchText, setSearchText] = useState(search || '');
 
     const reloadCart = () => {
         router.reload({ only: ['cart'], preserveScroll: true });
@@ -130,6 +131,19 @@ export default function OliMesin() {
             nFinish: () => setLoadingId(null),
         })
     }
+
+    useEffect(() => {
+        if (searchText === '') {
+            router.get(route('oli-mesin'), {
+                category: selectedCategory,
+                per_page: 9,
+            }, {
+                preserveState: true,
+                replace: true,
+            });
+        }
+    }, [searchText]);
+
       
     return (
         <DynamicLayout>
@@ -153,7 +167,7 @@ export default function OliMesin() {
                     <div className="flex">
                         <div className="w-1/6 flex-col p-4">
                             <div>
-                                <p className="text-lg font-bold">Kategori</p>
+                                <p className="text-lg font-semibold">Kategori</p>
                                 <Accordion type="single" collapsible>
                                     <AccordionItem value="item-1">
                                         <AccordionTrigger>Oli Motor</AccordionTrigger>
@@ -208,7 +222,7 @@ export default function OliMesin() {
                         </div>
                         <div className="w-5/6 p-4 flex flex-col">
                             <div>
-                                <h1 className="font-bold text-2xl">DAFTAR OLI MESIN</h1>
+                                <h1 className="font-semibold text-2xl">DAFTAR OLI MESIN</h1>
                             </div>
 
                             <div className="flex flex-row mt-4 space-x-2 items-center">
@@ -224,6 +238,34 @@ export default function OliMesin() {
                                         <SelectItem value="price-dsc">Harga Tertinggi</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="mt-4 w-full flex">
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        router.get(route('oli-mesin'), {
+                                            search: searchText,
+                                            category: selectedCategory,
+                                            per_page: 9,
+                                        });
+                                    }}
+                                    className="flex space-x-2 w-2/3"
+                                >
+                                    <input
+                                        type="text"
+                                        placeholder="Cari produk oli..."
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                    >
+                                        Cari
+                                    </button>
+                                </form>
                             </div>
 
                             {selectedCategory && (
@@ -257,7 +299,7 @@ export default function OliMesin() {
                                                     {product.body || "Deskripsi tidak tersedia"}
                                                 </CardDescription>
 
-                                                <p className="text-lg font-bold mt-2">
+                                                <p className="text-lg font-semibold mt-2">
                                                     Rp {product.price.toLocaleString()}
                                                 </p>
 

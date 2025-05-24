@@ -1,16 +1,24 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 
-export default function GuestLayout({ children }) {
+export default function LoginGuestLayout({ children }) {
     return (
-        <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo img="logoSMS2.png" className="h-48 w-auto fill-current text-white" />
-                </Link>
-            </div>
+        <div
+            className="relative min-h-screen flex items-center justify-center bg-cover bg-center"
+            style={{
+                backgroundImage: "url('/images/backgroundsms.jpg')",
+            }}
+        >
+            {/* Lapisan blur */}
+            <div className="absolute inset-0 bg-black/25 backdrop-blur-sm"></div>
 
-            <div className="mt-3 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg">
+            {/* Konten login */}
+            <div className="relative z-10 w-full max-w-sm bg-white/80 backdrop-blur-sm rounded-lg shadow-md p-6 sm:mt-0">
+                <div className="flex justify-center mb-4">
+                    <Link href="/">
+                        <ApplicationLogo img="logoSMS2.png" className="h-40 w-auto" />
+                    </Link>
+                </div>
                 {children}
             </div>
         </div>

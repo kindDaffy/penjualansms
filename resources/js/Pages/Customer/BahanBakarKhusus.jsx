@@ -162,7 +162,7 @@ export default function OliMesin() {
                     <div className="flex">
                         <div className="w-full p-4 flex flex-col">
                             <div>
-                                <h1 className="font-bold text-2xl">DAFTAR BAHAN BAKAR KHUSUS</h1>
+                                <h1 className="font-semibold text-2xl">DAFTAR BAHAN BAKAR KHUSUS</h1>
                             </div>
 
                             <div className="flex flex-row mt-4 space-x-2 items-center">
@@ -214,7 +214,7 @@ export default function OliMesin() {
                                                     <p className="text-orange-500 font-medium mt-2">Stok hampir habis</p>
                                                 ) : null}
 
-                                                <p className="text-lg font-bold mt-2">
+                                                <p className="text-lg font-semibold mt-2">
                                                     Rp {product.price.toLocaleString()}
                                                 </p>
 

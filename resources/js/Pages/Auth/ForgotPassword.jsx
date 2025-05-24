@@ -37,9 +37,10 @@ export default function ForgotPassword({ status }) {
                     type="email"
                     name="email"
                     value={data.email}
-                    className="mt-1 block w-full"
+                    className="mt-1 block w-full text-sm p-3"
                     isFocused={true}
                     onChange={(e) => setData('email', e.target.value)}
+                    placeholder="Masukkan email yang terdaftar"
                 />
 
                 <InputError message={errors.email} className="mt-2" />

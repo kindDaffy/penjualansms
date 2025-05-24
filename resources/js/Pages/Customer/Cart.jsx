@@ -206,7 +206,7 @@ export default function Cart(){
                     </div>
 
                     <div className="py-10">
-                        <h1 className="font-bold text-2xl">Shopping Cart</h1>
+                        <h1 className="font-semibold text-2xl">Shopping Cart</h1>
                     </div>
 
                     <div className="flex space-x-3 items-start">
@@ -223,7 +223,7 @@ export default function Cart(){
                                                 />
                                                 <div className="flex flex-col ml-3 justify-between">
                                                     <div>
-                                                        <p className="font-bold underline">{item.product?.name}</p>
+                                                        <p className="font-semibold underline">{item.product?.name}</p>
                                                         <p className="text-xs">Rp. {Number(item.product?.price).toLocaleString('id-ID')}</p>
                                                     </div>
                                                     <div className="flex space-x-1 cursor-pointer" onClick={() => handleRemove(item.id)}>
@@ -263,7 +263,7 @@ export default function Cart(){
 
                         <div className="w-1/3 flex flex-col ">
                             <div className="p-3 bg-white border-2 border-gray-200 rounded-lg">
-                                <h1 className="mb-5 font-bold">Summary</h1>
+                                <h1 className="mb-5 font-semibold">Summary</h1>
 
                                 <div className="flex flex-col justify-between space-y-0 mb-4">
                                     <div className="border-2 border-gray-200 p-2 flex justify-between text-sm rounded-t-md">
@@ -282,7 +282,7 @@ export default function Cart(){
                                         </div>
                                     )}
 
-                                    <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-bold rounded-b-md">
+                                    <div className="border-2 border-gray-200 p-2 flex justify-between text-sm font-semibold rounded-b-md">
                                         <p>Grandtotal</p>
                                         <p>Rp. {Number(cart?.grand_total || 0).toLocaleString('id-ID')}</p>
                                     </div>
@@ -298,7 +298,7 @@ export default function Cart(){
                             </div>
 
                             <div className="p-3 bg-white border-2 border-gray-200 rounded-lg mt-4">
-                                <h1 className="mb-5 font-bold">Promo</h1>
+                                <h1 className="mb-5 font-semibold">Promo</h1>
 
                                 {cart?.coupon ? (
                                     <div className="p-2 border-2 border-gray-200 mb-2 text-sm text-green-600 rounded-md">

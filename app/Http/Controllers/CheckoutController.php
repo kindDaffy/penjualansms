@@ -144,7 +144,6 @@ class CheckoutController extends Controller
         $orders = Order::with('items.product')
             ->where('user_id', $user->id)
             ->whereIn('status', [
-                Order::STATUS_PENDING,
                 Order::STATUS_CONFIRMED,
                 Order::STATUS_COMPLETED,
                 Order::STATUS_CANCELLED,
