@@ -1,5 +1,5 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Head, useForm, usePage, router } from "@inertiajs/react";
+import { Head, useForm, usePage, router, Link} from "@inertiajs/react";
 import Swal from "sweetalert2";
 import ReactPaginate from "react-paginate";
 import {
@@ -8,7 +8,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaPlus, FaSearch, FaFolderOpen} from "react-icons/fa";
 import { useState, useEffect } from "react";
 
 export default function Products() {
@@ -87,17 +87,27 @@ export default function Products() {
 
     const handleDelete = (product) => {
         Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Anda yakin?",
+            text: "Produk ini akan diarsipkan dan tidak akan muncul di daftar produk utama!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!",
+            confirmButtonText: "Ya, arsipkan!",
+            cancelButtonText: "Batal"
         }).then((result) => {
             if (result.isConfirmed) {
                 destroy(route("products.destroy", product.id), {
-                    onSuccess: () => Swal.fire("Deleted!", "Product has been deleted.", "success"),
+                    onSuccess: () => Swal.fire("Diarsipkan!", "Produk telah berhasil diarsipkan.", "success"),
+                    onError: (errors) => {
+                        let errorMessage = "Gagal mengarsipkan produk.";
+                        if (errors && errors.message) {
+                            errorMessage = errors.message;
+                        } else if (typeof errors === 'string') {
+                            errorMessage = errors;
+                        }
+                        Swal.fire("Error!", errorMessage, "error");
+                    }
                 });
             }
         });
@@ -139,13 +149,22 @@ export default function Products() {
             <div className="max-w-screen-xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-4">
                     {/* Add Button */}
-                    <button
-                        onClick={openAddModal}
-                        className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
-                    >
-                        <FaPlus className="mr-2" />
-                        Add Product
-                    </button>
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={openAddModal}
+                            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md shadow hover:bg-blue-600"
+                        >
+                            <FaPlus className="mr-2" />
+                            Add Product
+                        </button>
+                        <Link
+                            href={route("products.archive")}
+                            className="flex items-center bg-gray-600 text-white px-4 py-2 rounded-md shadow hover:bg-gray-700"
+                        >
+                            <FaFolderOpen className="mr-2" />
+                            Product Archive
+                        </Link>
+                    </div>
                     {/* Search Bar */}
                     <div className="relative">
                         <input

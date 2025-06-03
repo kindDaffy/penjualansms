@@ -8,11 +8,12 @@ use Database\Factories\ProductFactory;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use App\Traits\UuidTrait;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class Product extends Model
 {
-    use HasFactory, UuidTrait;
+    use HasFactory, UuidTrait, SoftDeletes;
     
     protected $table = 'shop_products';
     protected $keyType = 'string';

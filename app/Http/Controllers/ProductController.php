@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -16,19 +17,20 @@ class ProductController extends Controller
      */    
 
     // Bagian Admin
-public function index(Request $request)
+ public function index(Request $request)
     {
-        $search = $request->query('search'); // Ambil nilai pencarian dari query string
-    
-        $products = Product::with('user', 'inventory') // Load relasi inventory
+        $search = $request->query('search');
+        
+        // Hanya ambil produk yang TIDAK di-soft delete (active products)
+        $products = Product::with('user', 'inventory')
+            ->whereNull('deleted_at') // Filter untuk produk aktif
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                              ->orWhere('sku', 'like', "%{$search}%");
             })
             ->orderBy('sku', 'asc')
-            ->get()
+            ->get() // Menggunakan get() karena pagination di frontend
             ->map(function ($product) {
-                // Ambil qty dari inventory jika ada, jika tidak ada, default ke 0
                 $qty = $product->inventory->qty ?? 0; 
                 return [
                     'id' => $product->id,
@@ -36,27 +38,66 @@ public function index(Request $request)
                     'sku' => $product->sku,
                     'price' => $product->price,
                     'status' => $product->status,
-                    'stock_status' => $product->stock_status, // Tetap kirim stock_status jika masih dibutuhkan di tempat lain
-                    'stock_qty' => $qty, // Kirim jumlah stok ke frontend
-                    'featured_image' => $product->featured_image_url, // Gunakan accessor
+                    'stock_status' => $product->stock_status,
+                    'stock_qty' => $qty,
+                    'featured_image' => $product->featured_image_url, // Menggunakan accessor
                 ];
             });
-    
+        
         return Inertia::render('Admin/ListProduct', [
             'products' => $products,
-            'search' => $search, // Kirim search term ke frontend
+            'search' => $search,
             'success' => session('success'),
         ]);
     }
+
+    /**
+     * Display a listing of the soft-deleted resources (Product Archive).
+     */
+    public function archive(Request $request)
+    {
+        $search = $request->query('search');
+
+        // Ambil produk yang HANYA di-soft delete (archived products)
+        $products = Product::onlyTrashed()
+            ->with('user', 'inventory')
+            ->when($search, function ($query, $search) {
+                return $query->where('name', 'like', "%{$search}%")
+                             ->orWhere('sku', 'like', "%{$search}%");
+            })
+            ->orderBy('sku', 'asc')
+            ->get() // Menggunakan get() karena pagination di frontend
+            ->map(function ($product) {
+                $qty = $product->inventory->qty ?? 0;
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'price' => $product->price,
+                    'status' => $product->status,
+                    'stock_status' => $product->stock_status,
+                    'stock_qty' => $qty,
+                    'featured_image' => $product->featured_image_url, // Menggunakan accessor
+                    'deleted_at' => $product->deleted_at ? $product->deleted_at->format('Y-m-d H:i:s') : null, // Waktu soft delete
+                ];
+            });
+
+        return Inertia::render('Admin/ProductArchive', [
+            'products' => $products,
+            'search' => $search,
+            'success' => session('success'),
+        ]);
+    }
+
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        $products = Product::all();
-
-        return Inertia::render('Products/Create', compact('products'));
+        // Untuk create, kita mungkin ingin mengirim daftar kategori
+        $categories = Category::all();
+        return Inertia::render('Products/Create', compact('categories'));
     }
 
     /**
@@ -65,10 +106,13 @@ public function index(Request $request)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'sku'          => 'required|string|max:255|unique:shop_products,sku',
-            'name'         => 'required|string',
-            'type'         => 'required|string|max:255', // Menambahkan validasi untuk type
-            'status' => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
+            'sku'           => 'required|string|max:255|unique:shop_products,sku',
+            'name'          => 'required|string',
+            'type'          => 'required|string|max:255',
+            'status'        => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
+            'price'         => 'nullable|numeric|min:0', // Ini nullable karena diset di edit
+            'sale_price'    => 'nullable|numeric|min:0', // Ini nullable karena diset di edit
+            // category_id, qty, low_stock_threshold, image tidak di sini karena diset di edit
         ]);
     
         $validated['slug'] = Str::slug($request->name);
@@ -85,7 +129,7 @@ public function index(Request $request)
     public function edit($id)
     {
         
-        $product = Product::with('inventory', 'categories')->findOrFail($id);
+        $product = Product::withTrashed()->with('inventory', 'categories')->findOrFail($id);
         $categories = Category::all();
         $product->featured_image_url = $product->featured_image ? asset("storage/{$product->featured_image}") : null;
         return Inertia::render('Admin/EditProduct', [
@@ -100,82 +144,138 @@ public function index(Request $request)
      */
     public function update(Request $request, $id)
     {
-        $product = Product::with('inventory')->findOrFail($id);
-        $request->merge([
-            'manage_stock' => filter_var($request->manage_stock, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
-        ]);        
+        DB::beginTransaction(); // Mulai transaksi database
+        try {
+            // Ambil produk baik yang aktif maupun yang di-soft delete
+            $product = Product::withTrashed()->with('inventory')->findOrFail($id);
+            $request->merge([
+                'manage_stock' => filter_var($request->manage_stock, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false
+            ]);         
 
-        $validated = $request->validate([
-            'sku' => 'required|string|max:255|unique:shop_products,sku,' . $product->id,
-            'name'           => 'required',
-            'type'           => 'required|string|max:255', // Tambahkan validasi type
-            'price'          => 'required|numeric|min:0',
-            'sale_price'     => 'nullable|numeric|min:0',
-            'status'         => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
-            'stock_status'   => 'required|in:' . implode(',', array_keys(Product::STOCK_STATUSES)),
-            'excerpt'        => 'nullable|string',
-            'body'           => 'nullable|string',
-            'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:4096|min:50',
-            'manage_stock'   => 'required|boolean',
-            'category_id' => 'nullable|exists:shop_categories,id', // Validasi kategori
-            'qty'            => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
-            'low_stock_threshold' => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
+            $validated = $request->validate([
+                'sku' => 'required|string|max:255|unique:shop_products,sku,' . $product->id,
+                'name'           => 'required',
+                'type'           => 'required|string|max:255',
+                'price'          => 'required|numeric|min:0', // price sekarang required di update
+                'sale_price'     => 'nullable|numeric|min:0',
+                'status'         => 'required|in:' . implode(',', array_keys(Product::STATUSES)),
+                'stock_status'   => 'required|in:' . implode(',', array_keys(Product::STOCK_STATUSES)),
+                'excerpt'        => 'nullable|string',
+                'body'           => 'nullable|string',
+                'image'          => 'nullable|image|mimes:jpeg,png,jpg|max:4096|min:50',
+                'manage_stock'   => 'required|boolean',
+                'category_id' => 'nullable|exists:shop_categories,id', // Validasi kategori
+                'qty'            => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
+                'low_stock_threshold' => $request->manage_stock ? 'required|integer|min:0' : 'nullable|integer|min:0',
+            ]);
+            $validated['slug'] = Str::slug($request->name);
 
-        ]);
-        $validated['slug'] = Str::slug($request->name);
+            // Simpan gambar baru
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama jika ada dan bukan gambar seeder
+                // Cek apakah path yang disimpan di DB dimulai dengan 'images/' (dari seeder)
+                if ($product->featured_image && !Str::startsWith($product->featured_image, 'images/')) {
+                    Storage::disk('public')->delete($product->featured_image);
+                }
+                $imagePath = $request->file('image')->store('product-images', 'public');
+                $validated['featured_image'] = $imagePath;
+            }
+            
+            $product->update($validated);
 
-        // Simpan gambar baru
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('product-images', 'public');
-            $validated['featured_image'] = $imagePath;
+            // Sync kategori yang dipilih untuk produk
+            // Perbaikan logika sync kategori
+            // Jika category_id dikirim dan tidak kosong
+            if (!empty($request->category_id)) {
+                $product->categories()->sync([$request->category_id]);
+            } else {
+                // Jika category_id tidak dikirim atau kosong, hapus semua kategori terkait
+                $product->categories()->detach();
+            }
+
+            if ($request->manage_stock) {
+                $product->inventory()->updateOrCreate(
+                    ['product_id' => $product->id],
+                    [
+                        'qty' => $request->qty ?? 0, 
+                        'low_stock_threshold' => $request->low_stock_threshold ?? 0
+                    ]
+                );
+            } else {
+                $product->inventory()->delete(); // Hapus entri inventaris jika manage_stock false
+            }         
+
+            DB::commit(); // Commit transaksi jika semua berhasil
+            return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback transaksi jika terjadi kesalahan
+            // Log error untuk debugging
+            \Log::error('Error updating product: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            // Redirect dengan pesan error
+            return redirect()->back()->withErrors(['message' => 'Gagal memperbarui produk: ' . $e->getMessage()]);
         }
-        
-        $product->update($validated);
-
-        // Sync kategori yang dipilih untuk produk
-        if ($request->has('category_id')) {
-            $product->categories()->sync([$request->category_id]);  // Menyinkronkan kategori yang dipilih
-        }
-
-        if ($request->manage_stock) {
-            $product->inventory()->updateOrCreate(
-                ['product_id' => $product->id],
-                [
-                    'qty' => $request->qty ?? 0, 
-                    'low_stock_threshold' => $request->low_stock_threshold ?? 0
-                ]
-            );
-        } else {
-            $product->inventory()->delete();
-        }        
-
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft Delete the specified resource from storage.
      */
     public function destroy(Product $product)
     {
-    // Hapus relasi kategori produk
-    $product->categories()->detach();
+        // Hapus relasi kategori produk
+        $product->categories()->detach();
 
-    // Hapus gambar produk, pastikan gambar ada
-    if ($product->featured_image) {
-        // Hapus gambar dari storage
-        Storage::disk('public')->delete($product->featured_image);
+        // Lakukan soft delete
+        $product->delete(); // Ini akan mengisi kolom deleted_at
+
+        return redirect()->route('products.index')->with('success', 'Produk berhasil diarsipkan.');
     }
 
-    // Hapus relasi produk dengan tabel lain jika ada (misalnya shop_products_tags, images, dll)
-    foreach ($product->images as $image) {
-        Storage::disk('public')->delete($image->name); // Hapus file gambar
-        $image->delete(); // Hapus entri gambar dari database
+    /**
+     * Restore the specified soft-deleted resource.
+     */
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id); // Ambil hanya yang di-soft delete
+        $product->restore(); // Lakukan restore
+
+        return redirect()->route('products.archive')->with('success', 'Produk berhasil dikembalikan.');
     }
 
-    // Hapus produk
-    $product->delete();
+    /**
+     * Permanently remove the specified resource from storage.
+     */
+    public function forceDelete($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id); // Ambil hanya yang di-soft delete
+        
+        // Hapus relasi kategori produk
+        $product->categories()->detach();
 
-    return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
+        // Hapus gambar fisik secara permanen
+        if ($product->featured_image) {
+            // Cek apakah path gambar dari folder public (seeder)
+            if (Str::startsWith($product->featured_image, 'images/')) {
+                $fullPath = public_path($product->featured_image);
+                if (file_exists($fullPath)) {
+                    unlink($fullPath); // Hapus file dari public/images
+                }
+            } else {
+                // Jika dari storage/app/public, hapus melalui Storage facade
+                Storage::disk('public')->delete($product->featured_image);
+            }
+        }
+        // Hapus gambar tambahan jika ada (misal dari relasi ProductImage)
+        foreach ($product->images as $image) {
+            // Asumsi image->name adalah path relatif dari storage/app/public atau public/images
+            // Anda perlu logic serupa untuk images() jika path-nya bisa bervariasi
+            Storage::disk('public')->delete($image->name); 
+            $image->delete(); // Hapus entri dari ProductImages table
+        }
+
+        $product->forceDelete(); // Hapus permanen dari database
+
+        return redirect()->route('products.archive')->with('success', 'Produk berhasil dihapus permanen.');
     }
 
 
