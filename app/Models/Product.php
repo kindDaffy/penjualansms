@@ -15,38 +15,24 @@ class Product extends Model
     use HasFactory, UuidTrait;
     
     protected $table = 'shop_products';
-    protected $keyType = 'string'; // Pastikan id adalah string (UUID)
-    public $incrementing = false; // Matikan auto-increment
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
-        'parent_id',
-		'user_id',
-		'sku',
-		'type',
-		'name',
-		'slug',
-		'price',
-        'featured_image',
-        'sale_price',
-		'status',
-		'stock_status',
-		'manage_stock',
-		'publish_date',
-		'excerpt',
-		'body',
-		'metas',
+        'parent_id', 'user_id', 'sku', 'type', 'name', 'slug', 'price',
+        'featured_image', 'sale_price', 'status', 'stock_status', 'manage_stock',
+        'publish_date', 'excerpt', 'body', 'metas',
     ];
 
-
     public const DRAFT = 'DRAFT';
-	public const ACTIVE = 'ACTIVE';
-	public const INACTIVE = 'INACTIVE';
+    public const ACTIVE = 'ACTIVE';
+    public const INACTIVE = 'INACTIVE';
 
     public const STATUSES = [
-		self::DRAFT => 'Draft',
-		self::ACTIVE => 'Active',
-		self::INACTIVE => 'Inactive',
-	];
+        self::DRAFT => 'Draft',
+        self::ACTIVE => 'Active',
+        self::INACTIVE => 'Inactive',
+    ];
 
     public const STATUS_IN_STOCK = 'IN_STOCK';
     public const STATUS_OUT_OF_STOCK = 'OUT_OF_STOCK';
@@ -56,12 +42,12 @@ class Product extends Model
         self::STATUS_OUT_OF_STOCK => 'Out of Stock',
     ];
 
-	public const SIMPLE = 'SIMPLE';
-	public const CONFIGURABLE = 'CONFIGURABLE';
-	public const TYPES = [
-		self::SIMPLE => 'Simple',
-		self::CONFIGURABLE => 'Configurable',
-	];
+    public const SIMPLE = 'SIMPLE';
+    public const CONFIGURABLE = 'CONFIGURABLE';
+    public const TYPES = [
+        self::SIMPLE => 'Simple',
+        self::CONFIGURABLE => 'Configurable',
+    ];
     
     protected static function newFactory()
     {
@@ -72,10 +58,9 @@ class Product extends Model
     {
         parent::boot();
 
-        // Generate UUID secara otomatis untuk kolom id
         static::creating(function ($model) {
             if (empty($model->id)) {
-                $model->id = Str::uuid()->toString(); // Generate UUID baru
+                $model->id = Str::uuid()->toString();
             }
         });
     }
@@ -120,11 +105,21 @@ class Product extends Model
         return $this->hasOne(ProductImage::class)->where('id', $this->featured_image);
     }
 
-public function getFeaturedImageUrlAttribute()
-{
-    return $this->featured_image 
-        ? asset($this->featured_image) 
-        : asset('https://placehold.jp/150x150.png');
-}
+    // Accessor yang Disesuaikan
+    public function getFeaturedImageUrlAttribute()
+    {
+        if (empty($this->featured_image)) {
+            return asset('https://placehold.jp/150x150.png'); // Placeholder jika tidak ada gambar
+        }
 
+        // Jika path gambar dimulai dengan 'images/', berarti itu dari public/images/ (seeder)
+        if (Str::startsWith($this->featured_image, 'images/')) {
+            return asset($this->featured_image);
+        }
+
+        // Jika path gambar dimulai dengan 'product-images/' atau pola lainnya yang disimpan di storage/app/public/
+        // Asumsi: ini adalah gambar yang di-upload dan disimpan di storage/app/public/
+        // Maka URL-nya harus melalui symbolic link 'storage/'
+        return asset('storage/' . $this->featured_image);
+    }
 }
