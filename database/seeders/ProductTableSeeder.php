@@ -112,8 +112,8 @@ class ProductTableSeeder extends Seeder
             ],
             [
                 'sku' => 'OLI-007',
-                'name' => 'Fastron Gold 5W-30 (1 Liter)',
-                'slug' => 'fastron-gold-5w-30-(1liter)',
+                'name' => 'Fastron Techno 10W-40 (1 Liter)',
+                'slug' => 'fastron-techno-10w-40-(1liter)',
                 'price' => 615000,
                 'sale_price' => 615000,
                 'status' => Product::ACTIVE,
@@ -122,7 +122,7 @@ class ProductTableSeeder extends Seeder
                 'publish_date' => now(),
                 'excerpt' => 'Fastron Gold 5W-30 direkomendasikan untuk kendaraan generasi terbaru dari pabrikan kendaraan terkemuka.',
                 'body' => 'Fastron Gold 5W-30 direkomendasikan untuk kendaraan generasi terbaru dari pabrikan kendaraan terkemuka.',
-                'featured_image' => 'images/Fastron Gold.jpg',
+                'featured_image' => 'images/Fastron Techno 1L.jpg',
             ],
             [
                 'sku' => 'OLI-008',
@@ -150,7 +150,7 @@ class ProductTableSeeder extends Seeder
                 'publish_date' => now(),
                 'excerpt' => '',
                 'body' => '',
-                'featured_image' => 'images/Fastron Techno 1L.jpg',
+                'featured_image' => 'images/Fastron Techno 15W-50 1L.jpg',
             ],
             [
                 'sku' => 'OLI-010',
