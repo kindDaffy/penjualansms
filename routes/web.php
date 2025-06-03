@@ -48,6 +48,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Admin
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('/admin/categories', CategoryController::class)->except(['show'])->whereUuid('category');
+    Route::get('products/archive', [ProductController::class, 'archive'])->name('products.archive'); // <-- ROUTE BARU
+        Route::post('products/{product}/restore', [ProductController::class, 'restore'])
+            ->name('products.restore')
+            ->whereUuid('product'); // <-- ROUTE BARU
+        Route::delete('products/{product}/force-delete', [ProductController::class, 'forceDelete'])
+            ->name('products.forceDelete')
+            ->whereUuid('product'); // <-- ROUTE BARU
     Route::resource('/admin/products', ProductController::class);
     Route::resource('/admin/transaction', TransactionController::class);
     Route::post('/admin/transaction/{order}/complete', [TransactionController::class, 'complete'])
