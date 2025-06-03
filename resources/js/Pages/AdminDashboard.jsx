@@ -223,7 +223,7 @@ export default function AdminDashboard({ recentOrders, orderStats, revenueData, 
                                                         </p>
                                                         <p className="text-muted-foreground">{sale.customer_email}</p>
                                                     </div>
-                                                    <div className="ml-auto font-medium">Rp.{sale.base_total_price}</div>
+                                                    <div className="ml-auto font-medium">{formatCurrency(sale.base_total_price)}</div>
                                                 </div>
                                             ))
                                         ) : (

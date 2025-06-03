@@ -12,29 +12,36 @@ import { FaPlus, FaSearch } from "react-icons/fa";
 import { useState, useEffect } from "react";
 
 export default function Products() {
-    const { products, success, search } = usePage().props;
+    // Pastikan 'products' dan 'search' diambil dari props
+    const { products: initialProducts, success, search } = usePage().props; 
     
     // State untuk modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentProduct, setCurrentProduct] = useState(null);
+
     const openEditPage = (product) => {
         router.get(route("products.edit", product.id)); // Redirect ke halaman edit
     };
+
     // State untuk pagination dan search
     const [currentPage, setCurrentPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState(search || "");
     const itemsPerPage = 10;
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+    // Filter produk berdasarkan searchTerm (ini akan dihandle oleh backend sekarang)
+    // filteredProducts sekarang sebenarnya adalah `initialProducts` yang sudah difilter dari backend
+    const filteredProducts = initialProducts; 
+    
     const offset = currentPage * itemsPerPage;
     const paginatedProducts = filteredProducts.slice(offset, offset + itemsPerPage);
     const pageCount = Math.ceil(filteredProducts.length / itemsPerPage);
+
     // Handle page change
     const handlePageChange = ({ selected }) => {
         setCurrentPage(selected);
     };
+
     // Form handling
     const { data, setData, post, put, delete: destroy, errors, reset } = useForm({
         name: "",
@@ -44,7 +51,10 @@ export default function Products() {
         sale_price: "",
         stock_status: "IN_STOCK",
         status: "ACTIVE",
+        // Tambahkan 'qty' ke form data jika Anda ingin menambah/mengedit stok dari modal ini
+        qty: "", 
     });
+
     const openAddModal = () => {
         reset();
         setEditMode(false);
@@ -63,6 +73,7 @@ export default function Products() {
             stock_status: product.stock_status,
             status: product.status,
             featured_image: product.featured_image,
+            qty: product.stock_qty || 0, // Ambil stock_qty dari product dan set di form
         });
         setIsModalOpen(true);
     };
@@ -90,11 +101,12 @@ export default function Products() {
                 });
             }
         });
+    };
 
     // Handle perubahan input pencarian
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            router.get(route("products.index"), { search: searchTerm }, { preserveState: true });
+            router.get(route("products.index"), { search: searchTerm }, { preserveState: true, preserveScroll: true }); // Tambahkan preserveScroll
         }, 500); // Delay 500ms untuk debounce
 
         return () => clearTimeout(delayDebounceFn);
@@ -107,9 +119,19 @@ export default function Products() {
         }
     }, [success]);
 
+     // Fungsi helper untuk format Rupiah
+    const formatRupiah = (amount) => {
+        if (amount === null || amount === undefined || amount === 0) { 
+            return 'Not Set';
+        }
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0, 
+            maximumFractionDigits: 0, 
+        }).format(amount);
     };
 
-    console.log(products);
 
     return (
         <AdminLayout header={<h1>Products</h1>}>
@@ -150,27 +172,32 @@ export default function Products() {
                                     <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Price</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Stock</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">Stock</th> {/* Ini yang akan menampilkan jumlah stok */}
                                     <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {products && products.length > 0 ? (
+                                {paginatedProducts && paginatedProducts.length > 0 ? (
                                     paginatedProducts.map((product, index) => (
                                         <tr key={product.id} className="odd:bg-white even:bg-gray-50 hover:bg-gray-100">
                                             <td className="border border-gray-300 px-4 py-2">
+                                                {console.log("Image URL:", product.featured_image)}
                                                 <img
                                                     src={product.featured_image}
                                                     alt={product.name}
                                                     className="w-16 h-16 object-cover rounded-md shadow"
                                                 />
                                             </td>
-
                                             <td className="border border-gray-300 px-4 py-2">{product.sku}</td>
                                             <td className="border border-gray-300 px-4 py-2">{product.name}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{product.price}</td>
+                                            <td className="border border-gray-300 px-4 py-2">
+                                                {formatRupiah(product.price)}
+                                            </td>
                                             <td className="border border-gray-300 px-4 py-2">{product.status}</td>
-                                            <td className="border border-gray-300 px-4 py-2">{product.stock_status}</td>
+                                            {/* Menampilkan stock_qty */}
+                                            <td className="border border-gray-300 px-4 py-2">
+                                                {product.stock_qty === null || product.stock_qty === 0 ? 'Not Set' : product.stock_qty}
+                                            </td>
                                             <td className="border border-gray-300 px-4 py-2">
                                                 <div className="flex space-x-2">
                                                     <button
@@ -191,7 +218,7 @@ export default function Products() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" className="text-center py-4">
+                                        <td colSpan="7" className="text-center py-4"> {/* Ubah colSpan menjadi 7 */}
                                             No products found.
                                         </td>
                                     </tr>
@@ -240,7 +267,7 @@ export default function Products() {
                                     onChange={(e) => setData("name", e.target.value)}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
                                 />
-                                    {errors.sku && <div className="text-red-500 text-sm">{errors.name}</div>}
+                                {errors.name && <div className="text-red-500 text-sm">{errors.name}</div>}
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700">Type</label>
