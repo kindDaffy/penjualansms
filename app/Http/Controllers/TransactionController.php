@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -14,21 +15,43 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         $searchTerm = $request->input('search', '');
-        $status = $request->input('status', 'PENDING'); // Default to PENDING
+        $status = $request->input('status', 'PENDING');
 
-        $orders = Order::with('items')
+        // Pastikan relasi 'items' dan 'product' di dalam 'items' dimuat
+        $orders = Order::with('items.product') // <-- PENTING: tambahkan .product di sini
             ->when($status && $status != 'ALL', function ($query) use ($status) {
                 return $query->where('status', $status);
             })
             ->where(function($query) use ($searchTerm) {
                 $query->where('customer_first_name', 'like', '%'.$searchTerm.'%')
                     ->orWhere('customer_last_name', 'like', '%'.$searchTerm.'%')
-                    ->orWhere('code', 'like', '%'.$searchTerm.'%'); // Ganti order_code menjadi code
+                    ->orWhere('code', 'like', '%'.$searchTerm.'%');
             })
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->id,
+                    'no' => $order->code,
+                    'full_name' => $order->customer_first_name . ' ' . $order->customer_last_name,
+                    'total' => $order->grand_total, // Menggunakan grand_total dari model Order
+                    'status' => $order->status,
+                    'order_date' => Carbon::parse($order->created_at)->format('Y-m-d H:i:s'),
+                    // Sertakan detail item untuk modal
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_name' => $item->product ? $item->product->name : 'Produk tidak ditemukan', // Cek keberadaan produk
+                            'qty' => $item->qty,
+                            'price' => $item->price,
+                            'sub_total' => $item->sub_total,
+                        ];
+                    }),
+                ];
+            });
         
         return Inertia::render('Admin/ListTransaction', [
-            'orders' => $orders, // kirim data orders ke view
+            'orders' => $orders,
             'search' => $searchTerm,
             'status' => $status,
         ]);

@@ -123,7 +123,7 @@ class Product extends Model
 public function getFeaturedImageUrlAttribute()
 {
     return $this->featured_image 
-        ? asset("storage/product-images/{$this->featured_image}") 
+        ? asset($this->featured_image) 
         : asset('https://placehold.jp/150x150.png');
 }
 

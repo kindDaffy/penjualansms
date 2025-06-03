@@ -16,11 +16,11 @@ class ProductController extends Controller
      */    
 
     // Bagian Admin
-    public function index(Request $request)
+public function index(Request $request)
     {
         $search = $request->query('search'); // Ambil nilai pencarian dari query string
     
-        $products = Product::with('user')
+        $products = Product::with('user', 'inventory') // Load relasi inventory
             ->when($search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                              ->orWhere('sku', 'like', "%{$search}%");
@@ -28,13 +28,16 @@ class ProductController extends Controller
             ->orderBy('sku', 'asc')
             ->get()
             ->map(function ($product) {
+                // Ambil qty dari inventory jika ada, jika tidak ada, default ke 0
+                $qty = $product->inventory->qty ?? 0; 
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'price' => $product->price,
                     'status' => $product->status,
-                    'stock_status' => $product->stock_status,
+                    'stock_status' => $product->stock_status, // Tetap kirim stock_status jika masih dibutuhkan di tempat lain
+                    'stock_qty' => $qty, // Kirim jumlah stok ke frontend
                     'featured_image' => $product->featured_image_url, // Gunakan accessor
                 ];
             });
