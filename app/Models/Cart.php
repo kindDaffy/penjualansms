@@ -52,7 +52,7 @@ class Cart extends Model
             return $item->use_jerigen && $item->product->categories->contains('slug', 'bbk');
         })->unique(fn($item) => $item->product->slug);
 
-        $this->jerigen_count = $uniqueBbkTypes->count(); // ⬅️ set langsung ke property
+        $this->jerigen_count = $uniqueBbkTypes->count();
 
         $baseTotal = $this->items->sum(fn($item) => $item->qty * $item->price);
         $discount = $this->discount_amount ?? 0;

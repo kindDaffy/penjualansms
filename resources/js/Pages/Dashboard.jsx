@@ -1,7 +1,7 @@
 import DynamicLayout from '@/Layouts/DynamicLayout'; 
 import { Head, Link } from '@inertiajs/react';
 import * as React from "react";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Autoplay from "embla-carousel-autoplay";
 import {
     Carousel,
@@ -13,7 +13,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
-    const autoplayPlugin = React.useMemo(() => Autoplay({ delay: 3000, stopOnInteraction: false }), []);
+    const autoplayPlugin = useRef(
+        Autoplay({ delay: 3000, stopOnInteraction: false })
+    );
 
     const [showSplash, setShowSplash] = useState(true);
 
@@ -53,17 +55,17 @@ export default function Home() {
                         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                             {/* Carousel Section */}
                             <Carousel
-                                plugins={[autoplayPlugin]}
+                                plugins={[autoplayPlugin.current]}
                                 className="w-full max-w-7xl mx-auto mb-6 sm:mb-8"
                                 loop
-                                onMouseEnter={() => autoplayPlugin.current.stop()}
-                                onMouseLeave={() => autoplayPlugin.current.reset()}
+                                onMouseEnter={() => autoplayPlugin.current?.stop()}
+                                onMouseLeave={() => autoplayPlugin.current?.reset()}
                             >
                                 <CarouselContent>
                                     {[
-                                        { id: 1, title: 'Promo Oli Mesin', image: '/images/bbm.jpg' },
-                                        { id: 2, title: 'Promo Bahan Bakar', image: '/images/bbm.jpg' },
-                                        { id: 3, title: 'Kendaraan Optimal', image: '/images/bbm.jpg' },
+                                        { id: 1, title: 'Potongan Harga', image: '/images/kupon_diskon.jpg' },
+                                        { id: 2, title: 'Promo Bahan Bakar', image: '/images/prioritas.jpg' },
+                                        { id: 3, title: 'Kendaraan Optimal', image: '/images/pastipas.jpg' },
                                     ].map((item) => (
                                         <CarouselItem key={item.id}>
                                             <div className="p-2">
@@ -72,9 +74,8 @@ export default function Home() {
                                                         <img 
                                                             src={item.image} 
                                                             alt={item.title} 
-                                                            className="w-full h-48 sm:h-64 object-cover rounded-md mb-3 sm:mb-4" 
+                                                            className="w-full h-48 sm:h-80 object-contain bg-white rounded-md" 
                                                         />
-                                                        <span className="text-base sm:text-lg font-semibold">{item.title}</span>
                                                     </CardContent>
                                                 </Card>
                                             </div>

@@ -301,7 +301,8 @@ class ProductController extends Controller
 
         $products = Product::query()
             ->leftJoin('shop_product_inventories', 'shop_product_inventories.product_id', '=', 'shop_products.id')
-            ->select('shop_products.*') // penting agar pagination tetap bekerja
+            ->select('shop_products.*')
+            ->where('shop_products.status', 'active')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('shop_products.name', 'like', "%{$search}%")
@@ -317,9 +318,7 @@ class ProductController extends Controller
                     $q->where('slug', 'like', 'oli%');
                 });
             })
-            // Urutkan stok dulu
             ->orderByRaw('(shop_product_inventories.qty = 0) asc')
-            // Sorting tambahan dari user
             ->when($sort && $sort !== 'default', function ($query) use ($sort) {
                 if ($sort === 'ascending') {
                     $query->orderBy('shop_products.name', 'asc');
@@ -372,6 +371,7 @@ class ProductController extends Controller
         $products = Product::query()
             ->leftJoin('shop_product_inventories', 'shop_product_inventories.product_id', '=', 'shop_products.id')
             ->select('shop_products.*')
+            ->where('shop_products.status', 'active')
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('shop_products.name', 'like', "%{$search}%")

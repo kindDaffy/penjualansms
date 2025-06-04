@@ -54,6 +54,9 @@ class MidtransWebhookController extends Controller
 
             case 'deny':
             case 'cancel':
+                $order->status = Order::STATUS_CANCELLED;
+                $payment->status = 'CANCELLED';
+                break;
             case 'expire':
                 $order->status = Order::STATUS_CANCELLED;
                 $payment->status = 'FAILED';

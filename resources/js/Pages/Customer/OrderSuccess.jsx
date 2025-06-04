@@ -1,9 +1,13 @@
 import { Link } from '@inertiajs/react';
 import { Head } from "@inertiajs/react";
+import { usePage } from '@inertiajs/react';
 
 export default function OrderSuccess() {
+    const { auth } = usePage().props;
+    const customerName = auth?.user?.name ?? 'Pelanggan';
+
     const whatsappNumber = '6282314755575';
-    const message = encodeURIComponent("Halo admin, saya sudah melakukan pembayaran.");
+    const message = encodeURIComponent(`Halo Admin, saya sudah selesai melakukan pembayaran. Mohon konfirmasi dan siapkan pesanan atas nama ${customerName} ya!. Terima kasih.`);
 
     const whatsappLink = `https://wa.me/${whatsappNumber}?text=${message}`;
 

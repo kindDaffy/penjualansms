@@ -302,7 +302,7 @@ export default function Cart(){
 
                                 {cart?.coupon ? (
                                     <div className="p-2 border-2 border-gray-200 mb-2 text-sm text-green-600 rounded-md">
-                                        Kupon <strong>{cart.coupon.code}</strong> sedang aktif — Diskon Rp {Number(cart.discount_amount).toLocaleString('id-ID')}
+                                        Kupon <strong>{cart.coupon.code}</strong> sedang aktif — Diskon Rp {Number(cart.discount_amount).toLocaleString('id-ID')}<br/>
 
                                         <button
                                             onClick={handleRemoveCoupon}
