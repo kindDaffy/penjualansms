@@ -192,8 +192,8 @@ export default function OliMesin() {
                                             <AccordionContent className="flex justify-between mx-3">
                                                 Motor 4 Tak
                                                 <Checkbox 
-                                                    checked={selectedCategory === 'oli-motor-4-tak'}
-                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-4-tak')}
+                                                    checked={selectedCategory === 'oli-motor-sport'}
+                                                    onCheckedChange={() => handleCategoryFilter('oli-motor-sport')}
                                                 />
                                             </AccordionContent>
                                             <AccordionContent className="flex justify-between mx-3">
